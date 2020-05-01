@@ -11,10 +11,12 @@
 
         <include layout="@layout/toolbar" />
 
-        <androidx.core.widget.NestedScrollView
-            android:layout_marginTop="?attr/actionBarSize"
+        <ScrollView
+            android:id="@+id/ranking_scrollbar"
             android:layout_width="match_parent"
-            android:layout_height="100dp">
+            android:layout_height="100dp"
+            android:background="@drawable/stroke_bg"
+            android:padding="5dp">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/main_recyclerview"
@@ -24,7 +26,7 @@
             </androidx.recyclerview.widget.RecyclerView>
 
 
-        </androidx.core.widget.NestedScrollView>
+        </ScrollView>
 
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
