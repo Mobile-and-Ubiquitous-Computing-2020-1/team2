@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import java.util.Calendar;
 
@@ -45,13 +46,20 @@ public class WorkoutActivity extends AppCompatActivity {
             @Override
             public void onPreviewFrame(byte[] data, Camera camera) {
 
-                // TODO: Put "data" into the model
+                // TODO: Put "data" into the model and set "count"
+                int count = (int) prevTimeInMillies;
+                setCountText(count);
 
                 Log.d(TAG, "onPreviewFrame: data length: " + data.length
                         + ", time interval: " + (Calendar.getInstance().getTimeInMillis() - prevTimeInMillies) + "ms");
                 prevTimeInMillies = Calendar.getInstance().getTimeInMillis();
             }
         });
+    }
+
+    private void setCountText(int countText) {
+        TextView countTextView = findViewById(R.id.workout_count);
+        countTextView.setText(Integer.toString(countText));
     }
 
     private void requestCameraPermission() {
