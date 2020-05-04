@@ -18,7 +18,7 @@
 
         <ImageButton
             android:foreground="?attr/selectableItemBackground"
-            android:id="@+id/toolbar_email"
+            android:id="@+id/toolbar_plus_friend"
             android:layout_marginRight="15dp"
             android:layout_gravity="right"
             android:background="@android:drawable/ic_input_add"

@@ -5,27 +5,37 @@
     android:orientation="vertical"
     android:layout_margin="10dp">
 
+    <TextView
+        android:id="@+id/ranking_number"
+        android:text= "ranking_number"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
     <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/profile_image"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:src="@drawable/testimage"
         app:civ_border_color="#FF000000"
-        app:civ_border_width="2dp"/>
+        app:civ_border_width="2dp"
+        android:layout_toRightOf="@id/ranking_number"
+        android:layout_marginLeft="10dp"/>
 
     <TextView
         android:id="@+id/user_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="20dp"
+        android:layout_marginLeft="30dp"
         android:layout_toRightOf="@id/profile_image"
         android:text="홍길동"
-        android:textSize="20dp" />
+        android:textSize="15dp" />
 
     <LinearLayout
-        android:layout_width="130dp"
-        android:layout_height="25dp"
+        android:id="@+id/ranking_layout"
+        android:layout_width="80dp"
+        android:layout_height="30dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:background="#FAEA63"

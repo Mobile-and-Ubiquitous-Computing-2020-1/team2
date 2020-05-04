@@ -1,9 +1,13 @@
 package com.example.android;
 
 import android.content.res.Configuration;
+import android.media.Image;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ScrollView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,7 +36,13 @@ public class RankActivity extends AppCompatActivity {
 
         scrollView = (ScrollView) findViewById(R.id.ranking_scrollbar);
 
-
+        ImageButton imageButton = (ImageButton) findViewById(R.id.toolbar_plus_friend);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(RankActivity.this, "아직 친구 추가 activity가 없습니다", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
