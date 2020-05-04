@@ -1,8 +1,3 @@
-/*
- * References
- * https://stackoverflow.com/questions/21723557/java-lang-runtimeexception-takepicture-failed
- */
-
 package com.example.android;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,18 +25,21 @@ public class WorkoutActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Set layout
         requestWindowFeature(Window.FEATURE_NO_TITLE); // Hide the title
         getSupportActionBar().hide(); // Hide the title bar
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN); // Enable full screen
         setContentView(R.layout.activity_workout);
 
-        requestCameraPermission(); // Move to global main activity
+        // Start camera preview
+        requestCameraPermission(); // TODO: Move to global main activity
         mCamera = getCameraInstance();
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
+        // Process frame images
         mCamera.setPreviewCallback(new Camera.PreviewCallback() {
             long prevTimeInMillies = 0;
             @Override
