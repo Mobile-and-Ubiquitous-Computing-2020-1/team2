@@ -10,6 +10,8 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 public class WorkoutActivity extends AppCompatActivity {
@@ -21,7 +23,13 @@ public class WorkoutActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE); // Hide the title
+        getSupportActionBar().hide(); // Hide the title bar
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN); // Enable full screen
         setContentView(R.layout.activity_workout);
+
         requestCameraPermission(); // Move to global main activity
         mCamera = getCameraInstance();
         mPreview = new CameraPreview(this, mCamera);
