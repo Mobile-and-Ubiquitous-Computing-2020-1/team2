@@ -1,3 +1,8 @@
+/*
+ * References
+ * https://stackoverflow.com/questions/21723557/java-lang-runtimeexception-takepicture-failed
+ */
+
 package com.example.android;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -6,29 +11,20 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Picture;
 import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.FrameLayout;
+
+import java.util.Calendar;
 
 public class WorkoutActivity extends AppCompatActivity {
     private static final String TAG = WorkoutActivity.class.getSimpleName();
     private static final int MY_PERMISSION_REQUEST_CAMERA = 0;
     private Camera mCamera;
     private CameraPreview mPreview;
-    private PictureCallback mPicture = new PictureCallback() {
-        @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
-            Log.d(TAG, "Captured picture: " + data.length);
-            camera.startPreview();
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,14 +39,19 @@ public class WorkoutActivity extends AppCompatActivity {
         requestCameraPermission(); // Move to global main activity
         mCamera = getCameraInstance();
         mPreview = new CameraPreview(this, mCamera);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        FrameLayout preview = findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
-        Button button = findViewById(R.id.capture_button);
-        button.setOnClickListener(new View.OnClickListener() {
+        mCamera.setPreviewCallback(new Camera.PreviewCallback() {
+            long prevTimeInMillies = 0;
             @Override
-            public void onClick(View v) {
-                mCamera.takePicture(null, null, mPicture);
+            public void onPreviewFrame(byte[] data, Camera camera) {
+
+                // TODO: Put "data" into the model
+
+                Log.d(TAG, "onPreviewFrame: data length: " + data.length
+                        + ", time interval: " + (Calendar.getInstance().getTimeInMillis() - prevTimeInMillies) + "ms");
+                prevTimeInMillies = Calendar.getInstance().getTimeInMillis();
             }
         });
     }

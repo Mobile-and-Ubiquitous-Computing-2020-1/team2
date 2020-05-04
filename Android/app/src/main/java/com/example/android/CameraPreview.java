@@ -12,17 +12,17 @@ import android.view.SurfaceHolder;
 
 import java.io.IOException;
 
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
-    private static final String TAG = CameraPreview.class.getSimpleName();
-    private SurfaceHolder mHolder;
-    private Camera mCamera;
+    public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+        private static final String TAG = CameraPreview.class.getSimpleName();
+        private SurfaceHolder mHolder;
+        private Camera mCamera;
 
-    public CameraPreview(Context context, Camera camera) {
-        super(context);
-        mCamera = camera;
-        mHolder = getHolder();
-        mHolder.addCallback(this);
-    }
+        public CameraPreview(Context context, Camera camera) {
+            super(context);
+            mCamera = camera;
+            mHolder = getHolder();
+            mHolder.addCallback(this);
+        }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
