@@ -1,10 +1,12 @@
 package com.example.android;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.media.Image;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.Toast;
@@ -34,15 +36,18 @@ public class RankActivity extends AppCompatActivity {
         view.setAdapter(recyclerViewAdapter);
 
 
+
         scrollView = (ScrollView) findViewById(R.id.ranking_scrollbar);
 
-        ImageButton imageButton = (ImageButton) findViewById(R.id.toolbar_plus_friend);
-        imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(RankActivity.this, "아직 친구 추가 activity가 없습니다", Toast.LENGTH_SHORT).show();
-            }
-        });
+//        Button startButton = (Button) findViewById(R.id.start_button);
+//        startButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Toast.makeText(RankActivity.this, "intent를 넘겨줄 곳이 없습니다", Toast.LENGTH_SHORT).show();
+//
+//            }
+//        });
+
     }
 
     @Override
@@ -64,4 +69,12 @@ public class RankActivity extends AppCompatActivity {
         params.setMargins(20, actionBarHeight + 30, 20, 0);
         scrollView.setLayoutParams(params);
     }
+
+    public void mOnPopupClick(View v){
+        //데이터 담아서 팝업(액티비티) 호출
+        Intent intent = new Intent(this, AddFriendPopupActivity.class);
+        //intent.putExtra("data", "Test Popup");
+        startActivityForResult(intent, 1);
+    }
+
 }

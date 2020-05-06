@@ -23,6 +23,7 @@
             android:layout_gravity="right"
             android:background="@android:drawable/ic_input_add"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:onClick="mOnPopupClick"/>
     </androidx.appcompat.widget.Toolbar>
 </LinearLayout>
