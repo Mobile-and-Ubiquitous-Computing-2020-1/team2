@@ -1,13 +1,8 @@
 package com.example.android;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,7 +16,6 @@ import java.util.Calendar;
 
 public class WorkoutActivity extends AppCompatActivity {
     private static final String TAG = WorkoutActivity.class.getSimpleName();
-    private static final int MY_PERMISSION_REQUEST_CAMERA = 0;
     private Camera mCamera;
     private CameraPreview mPreview;
 
@@ -38,7 +32,6 @@ public class WorkoutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_workout);
 
         // Start camera preview
-        requestCameraPermission(); // TODO: Move to global main activity
         mCamera = getCameraInstance();
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = findViewById(R.id.camera_preview);
@@ -64,17 +57,6 @@ public class WorkoutActivity extends AppCompatActivity {
     private void setCountText(int countText) {
         TextView countTextView = findViewById(R.id.workout_count);
         countTextView.setText(Integer.toString(countText));
-    }
-
-    private void requestCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[] {Manifest.permission.CAMERA},
-                    MY_PERMISSION_REQUEST_CAMERA);
-        } else {
-            Log.d(TAG, "permitted");
-        }
     }
 
     public void onStopButtonClick(View v) {
