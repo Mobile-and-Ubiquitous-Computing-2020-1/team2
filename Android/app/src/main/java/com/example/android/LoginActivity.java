@@ -21,8 +21,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-public class Login extends AppCompatActivity {
-    private static final String TAG = Login.class.getSimpleName();
+public class LoginActivity extends AppCompatActivity {
+    private static final String TAG = LoginActivity.class.getSimpleName();
 
     private final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
     private ValueEventListener usersListener;

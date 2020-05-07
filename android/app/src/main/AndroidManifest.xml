@@ -18,7 +18,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Login"></activity>
+        <activity android:name=".LoginActivity"></activity>
         <activity android:name=".RankActivity"></activity>
         <activity android:name=".AddFriendPopupActivity" android:theme="@android:style/Theme.Dialog"></activity>
         <activity android:name=".WorkoutActivity" android:screenOrientation="landscape"></activity>
