@@ -3,6 +3,7 @@ package com.example.android;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -27,14 +28,18 @@ public class LoginActivity extends AppCompatActivity {
     private final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
     private ValueEventListener usersListener;
 
-    private User appUser = new User();
+    private static User currentUser;
     private final List<User> users = new LinkedList<>();
+
+    public static boolean isLoggedIn() {
+        return LoginActivity.currentUser != null;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(getApplicationContext());
-        setContentView(R.layout.login);
+        setContentView(R.layout.activity_login);
 
         usersListener = new ValueEventListener() {
             @Override
@@ -58,25 +63,16 @@ public class LoginActivity extends AppCompatActivity {
 
         for (User user : users) {
             if (user.id.equals(loginId)) {
-                appUser = user;
+                currentUser = user;
             }
         }
-        if (!loginId.equals(appUser.id)) {
-            appUser = new User(loginId);
-            users.add(appUser);
+        if (currentUser == null) {
+            currentUser = new User(loginId);
+            users.add(currentUser);
             usersRef.setValue(users);
         }
-        login();
-    }
-
-    private void login() {
-        Log.d(TAG, appUser.id);
-        for (String friendId : appUser.friends_id) {
-            Log.d(TAG, friendId);
-        }
-        for (Integer score : appUser.scores) {
-            Log.d(TAG, score.toString());
-        }
+        Log.d(TAG, "User id=" + currentUser.id + " is logged in.");
+        startActivity(new Intent(this, RankActivity.class));
     }
 
     @Override
