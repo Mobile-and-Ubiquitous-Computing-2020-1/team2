@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:orientation="vertical" >
+
+    <EditText
+        android:id="@+id/login"
+        android:layout_height="60dp"
+        android:layout_width="200dp"
+        android:hint="@string/login_message"
+        android:textSize="20sp"
+        android:inputType="text" />
+
+    <Button
+        android:onClick="onLogin"
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:text="@string/login"
+        android:textSize="20sp"/>
+
+</LinearLayout>
