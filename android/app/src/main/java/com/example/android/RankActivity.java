@@ -69,8 +69,7 @@ public class RankActivity extends AppCompatActivity {
     }
 
     public void onStartButtonClcik(View v){
-        //Intent intent = new Intent(this, AddFriendPopupActivity.class);
-        //startActivity(intent);
+        startActivity(new Intent(this, WorkoutActivity.class));
     }
 
     public void updateScore(){

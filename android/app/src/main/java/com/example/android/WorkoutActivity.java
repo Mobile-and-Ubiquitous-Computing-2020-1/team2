@@ -1,14 +1,17 @@
 package com.example.android;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -25,10 +28,11 @@ public class WorkoutActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate savedInstanceState: " + savedInstanceState);
 
         // Set layout
         requestWindowFeature(Window.FEATURE_NO_TITLE); // Hide the title
-        getSupportActionBar().hide(); // Hide the title bar
+//        getSupportActionBar().hide(); // Hide the title bar
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN); // Enable full screen
         setContentView(R.layout.activity_workout);
@@ -71,6 +75,10 @@ public class WorkoutActivity extends AppCompatActivity {
         } else {
             Log.d(TAG, "permitted");
         }
+    }
+
+    public void onStopButtonClick(View v) {
+        startActivity(new Intent(this, RankActivity.class));
     }
 
     private Camera getCameraInstance() {
