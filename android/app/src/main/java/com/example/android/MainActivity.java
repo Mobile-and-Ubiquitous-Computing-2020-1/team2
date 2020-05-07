@@ -7,12 +7,11 @@ import android.os.Bundle;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
-    public static boolean isLoggedIn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (isLoggedIn) {
+        if (LoginActivity.isLoggedIn()) {
             startActivity(new Intent(this, RankActivity.class));
         } else {
             startActivity(new Intent(this, LoginActivity.class));
