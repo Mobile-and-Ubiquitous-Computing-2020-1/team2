@@ -51,8 +51,8 @@ public class WorkoutActivity extends AppCompatActivity {
                         + ", time interval: " + (Calendar.getInstance().getTimeInMillis() - prevTimeInMillies) + "ms");
                 prevTimeInMillies = Calendar.getInstance().getTimeInMillis();
             }
-        });
-    }
+    });
+}
 
     private void setCountText(int countText) {
         TextView countTextView = findViewById(R.id.workout_count);
@@ -60,7 +60,7 @@ public class WorkoutActivity extends AppCompatActivity {
     }
 
     public void onStopButtonClick(View v) {
-        startActivity(new Intent(this, RankActivity.class));
+        finish();
     }
 
     private Camera getCameraInstance() {

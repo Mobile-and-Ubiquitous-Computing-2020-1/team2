@@ -73,6 +73,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         Log.d(TAG, "User id=" + currentUser.id + " is logged in.");
         startActivity(new Intent(this, RankActivity.class));
+        finish();
     }
 
     @Override
