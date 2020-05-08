@@ -55,5 +55,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         } else {
             startActivity(new Intent(this, LoginActivity.class));
         }
+        finish();
     }
 }
