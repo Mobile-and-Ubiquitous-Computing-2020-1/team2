@@ -112,7 +112,7 @@ public class RankActivity extends AppCompatActivity {
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 String test = data.getStringExtra("result");
-
+                // friend add code to firebase
                 Log.d("TAG", test);
             }
         }
