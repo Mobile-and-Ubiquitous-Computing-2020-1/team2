@@ -111,7 +111,8 @@ public class RankActivity extends AppCompatActivity {
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 String test = data.getStringExtra("result");
-
+                recyclerViewAdapter.memberDTOs.add(new MemberDTO(R.drawable.testimage4, 5, test, "5"));
+                recyclerViewAdapter.notifyDataSetChanged();
                 Log.d("TAG", test);
             }
         }

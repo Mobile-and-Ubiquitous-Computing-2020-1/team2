@@ -34,13 +34,14 @@ public class AddFriendPopupActivity extends Activity {
 
     //확인 버튼 클릭
     public void mOnClose(View v){
+
+        String friendID_str = editText.getText().toString();
         //데이터 전달하기
         //intent로 stringd을 전달해서 rankactivity에서 파이어베이스에 데이터를 넣거나 아니면 바로 여기서 넣거나.
         Intent intent = new Intent();
-        intent.putExtra("result", "Close Popup");
+        intent.putExtra("result", friendID_str);
         setResult(RESULT_OK, intent);
 
-        String friendID_str = editText.getText().toString();
 
         //액티비티(팝업) 닫기
         finish();

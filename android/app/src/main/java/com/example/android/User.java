@@ -12,6 +12,7 @@ public class User {
     public List<String> friends_id = new LinkedList<>();
     @PropertyName("scores")
     public List<Integer> scores = new LinkedList<>();
+    // scores of 7 days
 
     User() {}
 
