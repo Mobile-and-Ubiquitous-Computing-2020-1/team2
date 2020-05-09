@@ -28,7 +28,7 @@ public class LoginActivity extends AppCompatActivity {
     private final DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
     private ValueEventListener usersListener;
 
-    private static User currentUser;
+    public static User currentUser;
     private final List<User> users = new LinkedList<>();
 
     public static boolean isLoggedIn() {

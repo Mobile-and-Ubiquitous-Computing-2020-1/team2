@@ -74,10 +74,10 @@ public class RankActivity extends AppCompatActivity {
 
     public void updateScore(){
         recyclerViewAdapter.memberDTOs.clear();
-        recyclerViewAdapter.memberDTOs.add(new MemberDTO(R.drawable.testimage, 1, "김지수", "100"));
-        recyclerViewAdapter.memberDTOs.add(new MemberDTO(R.drawable.testimage2, 2, "누군가1", "50"));
-        recyclerViewAdapter.memberDTOs.add(new MemberDTO(R.drawable.testimage3, 3, "누군자2", "30"));
-        recyclerViewAdapter.memberDTOs.add(new MemberDTO(R.drawable.testimage4, 4, "누군가3", "10"));
+        recyclerViewAdapter.memberDTOs.add(new MemberDTO(R.drawable.testimage, 1, LoginActivity.currentUser.id, "100"));
+        recyclerViewAdapter.memberDTOs.add(new MemberDTO(R.drawable.testimage2, 2, "BB", "50"));
+        recyclerViewAdapter.memberDTOs.add(new MemberDTO(R.drawable.testimage3, 3, "CC", "30"));
+        recyclerViewAdapter.memberDTOs.add(new MemberDTO(R.drawable.testimage4, 4, "DD", "10"));
 
         // According to sorted users by score, put the data into memberDTOs sequentially
         // Current user shown first and then Top 5 user shown
