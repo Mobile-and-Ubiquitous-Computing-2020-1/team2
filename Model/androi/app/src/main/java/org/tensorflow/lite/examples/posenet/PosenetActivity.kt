@@ -583,13 +583,13 @@ class PosenetActivity :
       angle = pushupAngleR
     }
     if (k==1){
-      if (angle < 60.0) {
-        pushups += 1
+      if (angle < 90.0) {
         k = 0
       }
     }
     else {
-      if (pushupAngleL > 170.0){
+      if (pushupAngleL > 150.0){
+        pushups += 1
         k=1
       }
     }
