@@ -24,6 +24,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         // delete above and just call readUser();
 
+
     }
 
     @NonNull
