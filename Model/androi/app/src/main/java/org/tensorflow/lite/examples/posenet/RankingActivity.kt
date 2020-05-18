@@ -1,13 +1,12 @@
 package org.tensorflow.lite.examples.posenet
 
-import android.app.ActionBar
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
@@ -70,6 +69,8 @@ class RankingActivity : Activity() {
 
     private fun updateData()
     {
+        // firebase에서 갖고오도록 변경해야함
+        memberDTOs.clear()
         memberDTOs.add(MemberDTO(R.drawable.testimage, 1, "김지수", "100"))
         memberDTOs.add(MemberDTO(R.drawable.testimage2, 2, "AA", "50"))
         memberDTOs.add(MemberDTO(R.drawable.testimage3, 3, "BB", "40"))
@@ -84,5 +85,21 @@ class RankingActivity : Activity() {
         val intent = Intent(this, AddFriendPopupActivity::class.java)
         //intent.putExtra("data", "Test Popup");
         startActivityForResult(intent, 1)
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent
+    ) {
+        super.onActivityResult(requestCode, resultCode, data)
+        // Check which request we're responding to
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                val friend_id = data.getStringExtra("result")
+                Log.d("TAG", friend_id)
+                //memberDTOs.add(MemberDTO(R.drawable.testimage4, 5, friend_id, "10"))
+            }
+        }
     }
 }

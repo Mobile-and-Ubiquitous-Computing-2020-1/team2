@@ -3,6 +3,7 @@ package org.tensorflow.lite.examples.posenet
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.Window
@@ -24,10 +25,9 @@ class AddFriendPopupActivity : Activity() {
     }
 
     //확인 버튼 클릭
-    fun mOnClose(v: View?) { //데이터 전달하기
-//intent로 stringd을 전달해서 rankactivity에서 파이어베이스에 데이터를 넣거나 아니면 바로 여기서 넣거나.
+    fun mOnClose(v: View?) {
         val intent = Intent()
-        intent.putExtra("result", "Close Popup")
+        intent.putExtra("result", editText.getText().toString())
         setResult(RESULT_OK, intent)
         val friendID_str: String = editText.getText().toString()
         //액티비티(팝업) 닫기
