@@ -1,17 +1,24 @@
 package org.tensorflow.lite.examples.posenet
 
+import android.app.ActionBar
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
+import android.support.v7.widget.Toolbar
+import android.util.TypedValue
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
+import android.widget.ScrollView
 
 class RankingActivity : Activity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
+    private lateinit var scrollView : ScrollView
+    private var actionBarHeight = 0
     private var memberDTOs = mutableListOf<MemberDTO>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,11 +27,14 @@ class RankingActivity : Activity() {
 
         updateData()
 
-        Log.d("Test", "Set recycler view")
-        Log.d("Test", "data size = " + memberDTOs.size)
+        val tv = TypedValue()
+        if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+        }
 
         viewManager = LinearLayoutManager(this)
         viewAdapter = MyAdapter(memberDTOs)
+        scrollView = findViewById(R.id.ranking_scrollbar) as ScrollView
 
 
         recyclerView = findViewById<RecyclerView>(R.id.main_recyclerview).apply {
@@ -40,7 +50,22 @@ class RankingActivity : Activity() {
 
         }
 
-        Log.d("Test", "End onCreate")
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        layoutTheView()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        layoutTheView()
+    }
+
+    private fun layoutTheView() {
+        val params = scrollView.layoutParams as MarginLayoutParams
+        params.setMargins(20, actionBarHeight + 30, 20, 0)
+        scrollView.layoutParams = params
     }
 
     private fun updateData()
@@ -53,5 +78,11 @@ class RankingActivity : Activity() {
 
     public fun onStartButtonClick(view : View){
         startActivity(Intent(this, CameraActivity::class.java))
+    }
+
+    public fun mOnPopupClick(v: View) { //데이터 담아서 팝업(액티비티) 호출
+        val intent = Intent(this, AddFriendPopupActivity::class.java)
+        //intent.putExtra("data", "Test Popup");
+        startActivityForResult(intent, 1)
     }
 }
