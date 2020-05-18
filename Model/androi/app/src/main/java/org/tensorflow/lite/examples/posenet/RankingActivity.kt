@@ -1,10 +1,12 @@
 package org.tensorflow.lite.examples.posenet
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import android.view.View
 
 class RankingActivity : Activity() {
     private lateinit var recyclerView: RecyclerView
@@ -47,5 +49,9 @@ class RankingActivity : Activity() {
         memberDTOs.add(MemberDTO(R.drawable.testimage2, 2, "AA", "50"))
         memberDTOs.add(MemberDTO(R.drawable.testimage3, 3, "BB", "40"))
         memberDTOs.add(MemberDTO(R.drawable.testimage4, 4, "CC", "30"))
+    }
+
+    public fun onStartButtonClick(view : View){
+        startActivity(Intent(this, CameraActivity::class.java))
     }
 }

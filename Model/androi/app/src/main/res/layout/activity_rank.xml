@@ -27,16 +27,16 @@
         </ScrollView>
 
     </android.support.design.widget.CoordinatorLayout>
+
     <Button
         android:id="@+id/start_button"
-        android:onClick="onStartButtonClcik"
-        android:layout_gravity="bottom"
-        android:text="Start"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="100dp"
         android:layout_width="100dp"
         android:layout_height="50dp"
-        />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="100dp"
+        android:onClick="onStartButtonClick"
+        android:text="Start" />
 
 </RelativeLayout>
