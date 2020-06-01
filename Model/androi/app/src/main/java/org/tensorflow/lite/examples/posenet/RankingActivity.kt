@@ -3,14 +3,16 @@ package org.tensorflow.lite.examples.posenet
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ScrollView
+import androidx.annotation.RequiresApi
 
 class RankingActivity : Activity() {
     private lateinit var recyclerView: RecyclerView
@@ -24,7 +26,8 @@ class RankingActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_rank)
 
-        updateData()
+        var users: ArrayList<User> = intent.extras?.get("users") as ArrayList<User>
+        updateData(users)
 
         val tv = TypedValue()
         if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
@@ -33,7 +36,7 @@ class RankingActivity : Activity() {
 
         viewManager = LinearLayoutManager(this)
         viewAdapter = MyAdapter(memberDTOs)
-        scrollView = findViewById(R.id.ranking_scrollbar) as ScrollView
+        scrollView = findViewById(R.id.ranking_scrollbar)
 
 
         recyclerView = findViewById<RecyclerView>(R.id.main_recyclerview).apply {
@@ -67,21 +70,21 @@ class RankingActivity : Activity() {
         scrollView.layoutParams = params
     }
 
-    private fun updateData()
+    private fun updateData(users: ArrayList<User>)
     {
-        // firebase에서 갖고오도록 변경해야함
+        users.sortByDescending { user -> user.getTotalScore()}
         memberDTOs.clear()
-        memberDTOs.add(MemberDTO(R.drawable.testimage, 1, "김지수", "100"))
-        memberDTOs.add(MemberDTO(R.drawable.testimage2, 2, "AA", "50"))
-        memberDTOs.add(MemberDTO(R.drawable.testimage3, 3, "BB", "40"))
-        memberDTOs.add(MemberDTO(R.drawable.testimage4, 4, "CC", "30"))
+        for (i in 0 until users.size) {
+            var user = users[i]
+            memberDTOs.add(MemberDTO(R.drawable.testimage, i, user.id, user.getTotalScore().toString()))
+        }
     }
 
-    public fun onStartButtonClick(view : View){
+    fun onStartButtonClick(view : View){
         startActivity(Intent(this, CameraActivity::class.java))
     }
 
-    public fun mOnPopupClick(v: View) { //데이터 담아서 팝업(액티비티) 호출
+    fun mOnPopupClick(view: View) { //데이터 담아서 팝업(액티비티) 호출
         val intent = Intent(this, AddFriendPopupActivity::class.java)
         //intent.putExtra("data", "Test Popup");
         startActivityForResult(intent, 1)
