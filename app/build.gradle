@@ -31,6 +31,13 @@ android {
     // but continue the build even when errors are found:
     abortOnError false
   }
+    sourceSets {
+        main {
+            res {
+                srcDirs 'src/main/res', 'src/main/res/videos'
+            }
+        }
+    }
 }
 
 dependencies {
@@ -46,7 +53,6 @@ dependencies {
   testImplementation 'junit:junit:4.12'
   androidTestImplementation 'androidx.test:runner:1.2.0'
   androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-
   implementation 'androidx.recyclerview:recyclerview:1.1.0'
   implementation 'de.hdodenhof:circleimageview:3.1.0'
 }
