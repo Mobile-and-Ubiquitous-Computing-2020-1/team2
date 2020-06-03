@@ -576,19 +576,22 @@ class PosenetActivity :
     }
 
     var angle = 0.0
+    //choose which angle gets detected more accuratly and use that to calculate
     if (person.keyPoints[7].score > person.keyPoints[8].score){
       angle = pushupAngleL
     }
     else {
       angle = pushupAngleR
     }
+    //first goal is to hit 90 degree
     if (k==1){
       if (angle < 90.0) {
         k = 0
       }
     }
+    //only if 90 degree goal was hit check for 150 degree goal
     else {
-      if (pushupAngleL > 150.0){
+      if (angle > 150.0){
         pushups += 1
         k=1
       }
@@ -602,23 +605,13 @@ class PosenetActivity :
       paint
     )
     canvas.drawText(
-      "Angle: %s".format(pushupAngleR),
+      "Angle: %s".format(angle),
       (15.0f * widthRatio),
       (30.0f * heightRatio + bottom),
       paint
     )
-    canvas.drawText(
-      "Device: %s".format(posenet.device),
-      (15.0f * widthRatio),
-      (50.0f * heightRatio + bottom),
-      paint
-    )
-    canvas.drawText(
-      "Time: %.2f ms".format(posenet.lastInferenceTimeNanos * 1.0f / 1_000_000),
-      (15.0f * widthRatio),
-      (70.0f * heightRatio + bottom),
-      paint
-    )
+
+
 
     // Draw!
     surfaceHolder!!.unlockCanvasAndPost(canvas)
