@@ -16,23 +16,28 @@
 
 package org.tensorflow.lite.examples.posenet
 
+// import sun.text.normalizer.UTF16.append
+
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import androidx.core.content.res.ResourcesCompat
-import androidx.appcompat.app.AppCompatActivity
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
-import org.tensorflow.lite.examples.posenet.lib.KeyPoint
+import org.tensorflow.lite.examples.posenet.lib.Posenet
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.abs
-import org.tensorflow.lite.examples.posenet.lib.Posenet as Posenet
+
 
 class TestActivity : AppCompatActivity() {
 
@@ -50,11 +55,34 @@ class TestActivity : AppCompatActivity() {
     Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE),
     Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE)
   )
+
+  private fun initInputArray(bitmap: Bitmap): ByteBuffer {
+    val bytesPerChannel = 4
+    val inputChannels = 3
+    val batchSize = 1
+    val inputBuffer = ByteBuffer.allocateDirect(
+      batchSize * bytesPerChannel * bitmap.height * bitmap.width * inputChannels
+    )
+    inputBuffer.order(ByteOrder.nativeOrder())
+    inputBuffer.rewind()
+
+    val mean = 128.0f
+    val std = 128.0f
+    for (row in 0 until bitmap.height) {
+      for (col in 0 until bitmap.width) {
+        val pixelValue = bitmap.getPixel(col, row)
+        inputBuffer.putFloat(((pixelValue shr 16 and 0xFF) - mean) / std)
+        inputBuffer.putFloat(((pixelValue shr 8 and 0xFF) - mean) / std)
+        inputBuffer.putFloat(((pixelValue and 0xFF) - mean) / std)
+      }
+    }
+    return inputBuffer
+  }
+
   private val minConfidence = 0.5
   var pushups = 0
   var pushupAngleL = 0.0
   var pushupAngleR = 0.0
-  var k = 0
 
   fun calAngle(starty: Double, startx: Double, stopy1: Double, stopy2: Double, stopx1: Double, stopx2: Double):Double{
     val angle1: Double = Math.atan2((starty - stopy1), (startx - stopx1))
@@ -80,7 +108,7 @@ class TestActivity : AppCompatActivity() {
     val sampleImageView = findViewById<ImageView>(R.id.image)
 
     //val videoview = findViewById<VideoView>(R.id.videoview)
-    val videofile = Uri.parse("android.resource://" + packageName + "/" + R.raw.false_form)
+    val videofile = Uri.parse("android.resource://" + packageName + "/" + R.raw.false_wall)
     //videoview.setVideoURI(videofile)
     //videoview.start()
 
@@ -90,13 +118,35 @@ class TestActivity : AppCompatActivity() {
     val mediaPlayer = MediaPlayer.create(baseContext, videofile)
     val millisec = mediaPlayer.duration
     var count = 0L
+    var k = 0
 
     val posenet = Posenet(this.applicationContext)
 
     while(count < millisec) {
       var bitmap = retriever.getFrameAtTime(count * 1000, MediaMetadataRetriever.OPTION_CLOSEST)
       val scaledBitmap = Bitmap.createScaledBitmap(bitmap, MODEL_WIDTH, MODEL_HEIGHT, true)
+      val inputArray = (initInputArray(bitmap))
+      val stream = ByteArrayOutputStream()
+      scaledBitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+      val image = stream.toByteArray()
 
+      val imageBytes = ByteArray(inputArray.remaining())
+
+      try{
+        val os = openFileOutput("false_wall" + count/1000 + ".png", Context.MODE_PRIVATE)
+        os.write(imageBytes)
+        Log.d("tag", "written")
+        os.close()
+      }catch(e : IOException){
+        e.printStackTrace()
+      }
+
+      //Log.d("tag", filesDir.toString())
+      count += 500
+
+
+
+      /*
       sampleImageView.setImageBitmap(scaledBitmap)
 
 
@@ -112,6 +162,7 @@ class TestActivity : AppCompatActivity() {
       val maxy = 0
       val mutableBitmap = scaledBitmap.copy(Bitmap.Config.ARGB_8888, true)
       val canvas = Canvas(mutableBitmap)
+
       for (keypoint in person.keyPoints) {
 
         if (keypoint.position.y.toFloat() > maxy) {
@@ -146,9 +197,36 @@ class TestActivity : AppCompatActivity() {
         person.keyPoints[10].position.x.toDouble()
       ))
 
-      Log.d("tag", pushupAngleL.toString())
-      Log.d("tag", pushupAngleR.toString())
+      var angle = 0.0
+      //choose which angle gets detected more accuratly and use that to calculate
+      if (person.keyPoints[7].score > person.keyPoints[8].score){
+        angle = pushupAngleL
+      }
+      else {
+        angle = pushupAngleR
+      }
+
+      if (k==1){
+        if (angle < 90.0) {
+          k = 0
+        }
+      }
+      //only if 90 degree goal was hit check for 150 degree goal
+      else {
+        if (angle > 150.0){
+          pushups += 1
+          k=1
+        }
+      }
+
+
+      Log.d("tag", pushups.toString())
+      //Log.d("tag", pushupAngleL.toString())
+      //Log.d("tag", pushupAngleR.toString())
+
       count += 1000 // plus 1 sec
+
+       */
     }
   }
 }
