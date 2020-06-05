@@ -26,7 +26,7 @@ class RankingActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_rank)
 
-        var users: ArrayList<User>? = intent.extras?.get("users") as ArrayList<User>?
+        val users: ArrayList<User>? = intent.extras?.get("users") as ArrayList<User>?
         updateData(users)
 
         val tv = TypedValue()
@@ -59,7 +59,7 @@ class RankingActivity : Activity() {
         layoutTheView()
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration?) {
+    override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         layoutTheView()
     }

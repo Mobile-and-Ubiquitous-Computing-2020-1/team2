@@ -18,13 +18,13 @@
         android:fullBackupContent="true"
         android:allowBackup="true">
 
-        <activity android:name=".TestActivity">
+        <activity android:name=".TestActivity" />
+        <activity android:name=".RankingActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RankingActivity" />
         <activity android:name=".CameraActivity" />
         <activity android:name=".AddFriendPopupActivity" android:theme="@android:style/Theme.Dialog" />
     </application>
