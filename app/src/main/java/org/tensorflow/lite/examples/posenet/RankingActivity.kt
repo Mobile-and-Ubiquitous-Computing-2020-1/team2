@@ -26,7 +26,7 @@ class RankingActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_rank)
 
-        var users: ArrayList<User> = intent.extras?.get("users") as ArrayList<User>
+        var users: ArrayList<User>? = intent.extras?.get("users") as ArrayList<User>?
         updateData(users)
 
         val tv = TypedValue()
@@ -70,13 +70,22 @@ class RankingActivity : Activity() {
         scrollView.layoutParams = params
     }
 
-    private fun updateData(users: ArrayList<User>)
+    private fun updateData(users: ArrayList<User>?)
     {
-        users.sortByDescending { user -> user.getTotalScore()}
-        memberDTOs.clear()
-        for (i in 0 until users.size) {
-            var user = users[i]
-            memberDTOs.add(MemberDTO(R.drawable.testimage, i, user.id, user.getTotalScore().toString()))
+        if (users != null) {
+            users.sortByDescending { user -> user.getTotalScore() }
+            memberDTOs.clear()
+            for (i in 0 until users.size) {
+                var user = users[i]
+                memberDTOs.add(
+                    MemberDTO(
+                        R.drawable.testimage,
+                        i,
+                        user.id,
+                        user.getTotalScore().toString()
+                    )
+                )
+            }
         }
     }
 

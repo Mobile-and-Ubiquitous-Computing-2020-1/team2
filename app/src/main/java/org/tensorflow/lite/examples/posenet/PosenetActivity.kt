@@ -410,6 +410,7 @@ class PosenetActivity :
       }
 
       val image = imageReader.acquireLatestImage() ?: return
+      Log.d("PosenetActivity", "" + image.height + ", " + image.width)
       fillBytes(image.planes, yuvBytes)
 
       ImageUtils.convertYUV420ToARGB8888(
