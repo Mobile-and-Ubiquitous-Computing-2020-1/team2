@@ -18,9 +18,7 @@ package org.tensorflow.lite.examples.posenet
 
 // import sun.text.normalizer.UTF16.append
 
-import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.media.MediaMetadataRetriever
@@ -28,57 +26,19 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.Posenet
-import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import java.lang.StringBuilder
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.abs
 
 
 class TestActivity : AppCompatActivity() {
-
-  private val bodyJoints = listOf(
-    Pair(BodyPart.LEFT_WRIST, BodyPart.LEFT_ELBOW),
-    Pair(BodyPart.LEFT_ELBOW, BodyPart.LEFT_SHOULDER),
-    Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER),
-    Pair(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_ELBOW),
-    Pair(BodyPart.RIGHT_ELBOW, BodyPart.RIGHT_WRIST),
-    Pair(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP),
-    Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP),
-    Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_SHOULDER),
-    Pair(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE),
-    Pair(BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE),
-    Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE),
-    Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE)
-  )
-
-  private fun initInputArray(bitmap: Bitmap): ByteBuffer {
-    val bytesPerChannel = 4
-    val inputChannels = 3
-    val batchSize = 1
-    val inputBuffer = ByteBuffer.allocateDirect(
-      batchSize * bytesPerChannel * bitmap.height * bitmap.width * inputChannels
-    )
-    inputBuffer.order(ByteOrder.nativeOrder())
-    inputBuffer.rewind()
-
-    val mean = 128.0f
-    val std = 128.0f
-    for (row in 0 until bitmap.height) {
-      for (col in 0 until bitmap.width) {
-        val pixelValue = bitmap.getPixel(col, row)
-        inputBuffer.putFloat(((pixelValue shr 16 and 0xFF) - mean) / std)
-        inputBuffer.putFloat(((pixelValue shr 8 and 0xFF) - mean) / std)
-        inputBuffer.putFloat(((pixelValue and 0xFF) - mean) / std)
-      }
-    }
-    return inputBuffer
-  }
-
   private val minConfidence = 0.5
   var pushups = 0
   var pushupAngleL = 0.0
@@ -105,128 +65,136 @@ class TestActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.tfe_pn_activity_test)
 
-    val sampleImageView = findViewById<ImageView>(R.id.image)
+    val resourceList = intArrayOf(
+//      R.raw.backward_dips,
+//      R.raw.degree_45_narrow,
+//      R.raw.degree_45_wide,
+//      R.raw.false_form,
+//      R.raw.false_knee_on_bottom,
+//      R.raw.false_laying_on_floor,
+//      R.raw.false_medium,
+//      R.raw.false_small,
+//      R.raw.false_wall,
+//      R.raw.frontal_view,
+//      R.raw.left_arm_mirror,
+//      R.raw.left_side_regular,
+//      R.raw.narrow,
+      R.raw.rear_view,
+      R.raw.regular,
+      R.raw.regular_other_person,
+      R.raw.right_arm_mirror,
+      R.raw.wide)
 
-    //val videoview = findViewById<VideoView>(R.id.videoview)
-    val videofile = Uri.parse("android.resource://" + packageName + "/" + R.raw.false_wall)
-    //videoview.setVideoURI(videofile)
-    //videoview.start()
+    val dirnameList = arrayOf(
+//      "backward_dips",
+//      "degree_45_narrow",
+//      "degree_45_wide",
+//      "false_form",
+//      "false_knee_on_bottom",
+//      "false_laying_on_floor",
+//      "false_medium",
+//      "false_small",
+//      "false_wall",
+//      "frontal_view",
+//      "left_arm_mirror",
+//      "left_side_regular",
+//      "narrow",
+      "rear_view",
+      "regular",
+      "regular_other_person",
+      "right_arm_mirror",
+      "wide")
 
+    for (i in 0..resourceList.size) {
+      val resource = resourceList[i]
+      val dirname = dirnameList[i]
+
+      saveVideo(resource, "$filesDir/data/$dirname")
+    }
+
+  }
+
+  private fun saveVideo(resource: Int, dirpath: String) {
+    val videofile = Uri.parse("android.resource://" + packageName + "/" + resource)
     val retriever = MediaMetadataRetriever()
-    var bitmapArrayList = ArrayList<Bitmap>()
     retriever.setDataSource(this, videofile)
+
     val mediaPlayer = MediaPlayer.create(baseContext, videofile)
     val millisec = mediaPlayer.duration
+    val frameInterval = 30
     var count = 0L
-    var k = 0
+
+    Log.d("AAAA", millisec.toString())
+    Log.d("AAAA", dirpath)
+
+    val dir = File(dirpath)
+    try {
+      dir.mkdir()
+    } catch (e: IOException) {}
 
     val posenet = Posenet(this.applicationContext)
 
-    while(count < millisec) {
+    while (count < millisec) {
       var bitmap = retriever.getFrameAtTime(count * 1000, MediaMetadataRetriever.OPTION_CLOSEST)
-      val scaledBitmap = Bitmap.createScaledBitmap(bitmap, MODEL_WIDTH, MODEL_HEIGHT, true)
-      val inputArray = (initInputArray(bitmap))
-      val stream = ByteArrayOutputStream()
-      scaledBitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
-      val image = stream.toByteArray()
-
-      val imageBytes = ByteArray(inputArray.remaining())
-
-      try{
-        val os = openFileOutput("false_wall" + count/1000 + ".png", Context.MODE_PRIVATE)
-        os.write(imageBytes)
-        Log.d("tag", "written")
-        os.close()
-      }catch(e : IOException){
-        e.printStackTrace()
-      }
-
-      //Log.d("tag", filesDir.toString())
-      count += 500
-
-
-
-      /*
-      sampleImageView.setImageBitmap(scaledBitmap)
-
-
-      //val drawedImage = ResourcesCompat.getDrawable(resources, R.drawable.image, null)
-      //val imageBitmap = drawableToBitmap(drawedImage!!)
-      //sampleImageView.setImageBitmap(imageBitmap)
+      val cropedBitmap = cropBitmap(bitmap)
+      val scaledBitmap = Bitmap.createScaledBitmap(cropedBitmap, MODEL_WIDTH, MODEL_HEIGHT, true)
       val person = posenet.estimateSinglePose(scaledBitmap)
 
-      // Draw the keypoints over the image.
-      val paint = Paint()
-      paint.color = Color.RED
-      val size = 2.0f
-      val maxy = 0
-      val mutableBitmap = scaledBitmap.copy(Bitmap.Config.ARGB_8888, true)
-      val canvas = Canvas(mutableBitmap)
+      val out = File("$dirpath/$count.out")
+      val builder = StringBuilder(1000)
+      builder.append("score: $person.score\n")
+      for (keypoint in person.keyPoints.toList()) {
+        builder.append("${keypoint.bodyPart.toString()} ${keypoint.position.x} ${keypoint.position.y} ${keypoint.score}\n")
+      }
+      out.writeText(builder.toString())
 
-      for (keypoint in person.keyPoints) {
+      try {
+        val out = FileOutputStream("$dirpath/$count.png")
+        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+      } catch (e: IOException) {
+        e.printStackTrace()
+      }
+      count += frameInterval
+    }
+  }
 
-        if (keypoint.position.y.toFloat() > maxy) {
+  /**
+   * from Posenet.kt
+   * Crop bitmap file
+   */
+  private fun cropBitmap(bitmap: Bitmap): Bitmap {
+    val bitmapRatio = bitmap.height.toFloat() / bitmap.width
+    val modelInputRatio = MODEL_HEIGHT.toFloat() / MODEL_WIDTH
+    var croppedBitmap = bitmap
 
-          paint.color = Color.BLUE
+    // Acceptable difference between the modelInputRatio and bitmapRatio to skip cropping.
+    val maxDifference = 1e-5
 
-        } else {
-          paint.color = Color.RED
-        }
-        canvas.drawCircle(
-          keypoint.position.x.toFloat(),
-          keypoint.position.y.toFloat(), size, paint
+    // Checks if the bitmap has similar aspect ratio as the required model input.
+    when {
+      abs(modelInputRatio - bitmapRatio) < maxDifference -> return croppedBitmap
+      modelInputRatio < bitmapRatio -> {
+        // New image is taller so we are height constrained.
+        val cropHeight = bitmap.height - (bitmap.width.toFloat() / modelInputRatio)
+        croppedBitmap = Bitmap.createBitmap(
+          bitmap,
+          0,
+          (cropHeight / 2).toInt(),
+          bitmap.width,
+          (bitmap.height - cropHeight).toInt()
         )
       }
-      sampleImageView.adjustViewBounds = true
-      sampleImageView.setImageBitmap(mutableBitmap)
-
-      pushupAngleL = (calAngle(
-        person.keyPoints[7].position.y.toDouble(),
-        person.keyPoints[7].position.x.toDouble(),
-        person.keyPoints[5].position.y.toDouble(),
-        person.keyPoints[9].position.y.toDouble(),
-        person.keyPoints[5].position.x.toDouble(),
-        person.keyPoints[9].position.x.toDouble()
-      ))
-      pushupAngleR = (calAngle(
-        person.keyPoints[8].position.y.toDouble(),
-        person.keyPoints[8].position.x.toDouble(),
-        person.keyPoints[6].position.y.toDouble(),
-        person.keyPoints[10].position.y.toDouble(),
-        person.keyPoints[6].position.x.toDouble(),
-        person.keyPoints[10].position.x.toDouble()
-      ))
-
-      var angle = 0.0
-      //choose which angle gets detected more accuratly and use that to calculate
-      if (person.keyPoints[7].score > person.keyPoints[8].score){
-        angle = pushupAngleL
+      else -> {
+        val cropWidth = bitmap.width - (bitmap.height.toFloat() * modelInputRatio)
+        croppedBitmap = Bitmap.createBitmap(
+          bitmap,
+          (cropWidth / 2).toInt(),
+          0,
+          (bitmap.width - cropWidth).toInt(),
+          bitmap.height
+        )
       }
-      else {
-        angle = pushupAngleR
-      }
-
-      if (k==1){
-        if (angle < 90.0) {
-          k = 0
-        }
-      }
-      //only if 90 degree goal was hit check for 150 degree goal
-      else {
-        if (angle > 150.0){
-          pushups += 1
-          k=1
-        }
-      }
-
-
-      Log.d("tag", pushups.toString())
-      //Log.d("tag", pushupAngleL.toString())
-      //Log.d("tag", pushupAngleR.toString())
-
-      count += 1000 // plus 1 sec
-
-       */
     }
+    return croppedBitmap
   }
 }
