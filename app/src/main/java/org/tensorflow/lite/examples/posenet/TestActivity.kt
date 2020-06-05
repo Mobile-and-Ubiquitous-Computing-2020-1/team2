@@ -79,13 +79,15 @@ class TestActivity : AppCompatActivity() {
 //      R.raw.left_arm_mirror,
 //      R.raw.left_side_regular,
 //      R.raw.narrow,
-      R.raw.rear_view,
-      R.raw.regular,
-      R.raw.regular_other_person,
-      R.raw.right_arm_mirror,
-      R.raw.wide)
+//      R.raw.rear_view,
+//      R.raw.regular,
+//      R.raw.regular_other_person,
+//      R.raw.right_arm_mirror,
+//      R.raw.wide
+    )
 
-    val dirnameList = arrayOf(
+    val dirnameList = arrayOf("")
+//    val dirnameList = arrayOf(
 //      "backward_dips",
 //      "degree_45_narrow",
 //      "degree_45_wide",
@@ -99,11 +101,12 @@ class TestActivity : AppCompatActivity() {
 //      "left_arm_mirror",
 //      "left_side_regular",
 //      "narrow",
-      "rear_view",
-      "regular",
-      "regular_other_person",
-      "right_arm_mirror",
-      "wide")
+//      "rear_view",
+//      "regular",
+//      "regular_other_person",
+//      "right_arm_mirror",
+//      "wide"
+//    )
 
     for (i in 0..resourceList.size) {
       val resource = resourceList[i]
