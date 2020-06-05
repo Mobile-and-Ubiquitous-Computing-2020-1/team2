@@ -46,16 +46,29 @@ import org.tensorflow.lite.examples.posenet.lib.Posenet
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.media.AudioManager
+import android.media.ToneGenerator
+
 
 class PosenetActivity :
   Fragment(),
+  SensorEventListener,
   ActivityCompat.OnRequestPermissionsResultCallback {
 
-  val pushupAngles = arrayListOf<Double>()
+
+  private lateinit var mSensorManager: SensorManager
+  private var mAccelerometer: Sensor ?= null
   var pushups = 0
-  var pushupAngleL = 0.0
-  var pushupAngleR = 0.0
+  var angle = 0.0
   var k = 0
+  var start = 0
+  val toneG = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+
+
 
 
   fun calAngle(starty: Double, startx: Double, stopy1: Double, stopy2: Double, stopx1: Double, stopx2: Double):Double{
@@ -79,6 +92,24 @@ class PosenetActivity :
     Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE)
   )
 
+  override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+  override fun onSensorChanged(event: SensorEvent) {
+
+    if (start == 2 && abs(event.values[0]) < 2 && abs(event.values[2]) < 4){
+    }
+    else if(start == 2 && abs(event.values[0]) > 2 && abs(event.values[2]) > 4){
+      start = 0
+      toneG.startTone(ToneGenerator.TONE_CDMA_PIP, 100)
+
+    }
+    else if(start == 0 && abs(event.values[0]) < 2 && abs(event.values[2]) < 4){
+      start = 1
+
+    }
+    else{
+      start = 0
+    }
+  }
 
 
   /** Threshold for confidence score. */
@@ -218,12 +249,17 @@ class PosenetActivity :
   override fun onResume() {
     super.onResume()
     startBackgroundThread()
+    mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
   }
 
   override fun onStart() {
     super.onStart()
     openCamera()
     posenet = Posenet(this.context!!)
+    mSensorManager =
+      (context!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager)
+    // focus in accelerometer
+    mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
   }
 
@@ -231,11 +267,13 @@ class PosenetActivity :
     closeCamera()
     stopBackgroundThread()
     super.onPause()
+    mSensorManager.unregisterListener(this)
   }
 
   override fun onDestroy() {
     super.onDestroy()
     posenet.close()
+    mSensorManager.unregisterListener(this)
   }
 
   private fun requestCameraPermission() {
@@ -527,8 +565,7 @@ class PosenetActivity :
 
     val widthRatio = screenWidth.toFloat() / MODEL_WIDTH
     val heightRatio = screenHeight.toFloat() / MODEL_HEIGHT
-    var heightmax = 0
-    var heightname = ""
+
     // Draw key points over the image.
     for (keyPoint in person.keyPoints) {
 
@@ -542,6 +579,13 @@ class PosenetActivity :
     }
 
 
+
+    var bodySideL = 0.0
+    var bodySideR = 0.0
+    var bodySide = 0.0
+    var bodyDist = 0.0
+    var pushupAngleL = 0.0
+    var pushupAngleR = 0.0
     val AngleList = arrayListOf<KeyPoint>()
     for (line in bodyJoints) {
 
@@ -576,28 +620,51 @@ class PosenetActivity :
       }
     }
 
-    var angle = 0.0
+
+  
     //choose which angle gets detected more accuratly and use that to calculate
-    if (person.keyPoints[7].score > person.keyPoints[8].score){
+    bodySideL = person.keyPoints[5].score.toDouble() + person.keyPoints[7].score.toDouble() +
+            person.keyPoints[9].score.toDouble() + person.keyPoints[11].score.toDouble()
+    bodySideR = person.keyPoints[6].score.toDouble() + person.keyPoints[8].score.toDouble() +
+            person.keyPoints[10].score.toDouble() + person.keyPoints[12].score.toDouble()
+
+    if (bodySideL > bodySideR) {
       angle = pushupAngleL
-    }
-    else {
+      bodySide = abs(bodySideL)
+      bodyDist = abs(person.keyPoints[5].position.x.toDouble() - person.keyPoints[13].position.x.toDouble())
+    } else {
       angle = pushupAngleR
-    }
-    //first goal is to hit 90 degree
-    if (k==1){
-      if (angle < 90.0) {
-        k = 0
-      }
-    }
-    //only if 90 degree goal was hit check for 150 degree goal
-    else {
-      if (angle > 150.0){
-        pushups += 1
-        k=1
-      }
+      bodySide = abs(bodySideR)
+      bodyDist = abs(person.keyPoints[6].position.x.toDouble() - person.keyPoints[14].position.x.toDouble())
     }
 
+    //Checking if phone and body is in correct position and notifying user
+    if (start == 1 && bodySide > 2.5 && bodyDist > 20) {
+      start = 2
+      toneG.startTone(ToneGenerator.TONE_PROP_BEEP2,200)
+    }
+    else if (start == 2 && (bodySide < 2.5 || bodyDist < 20)) {
+      start = 0
+      toneG.startTone(ToneGenerator.TONE_CDMA_PIP, 200)
+    }
+
+    //If correct position of phone and user count pushups
+
+    if (start==2) {
+      //first goal is to hit 90 degree
+      if (k == 1) {
+        if (angle < 90.0) {
+          k = 0
+        }
+      }
+      //only if 90 degree goal was hit check for 150 degree goal
+      else {
+        if (angle > 150.0) {
+          pushups += 1
+          k = 1
+        }
+      }
+    }
 
     canvas.drawText(
       "Pushups: %s".format(pushups),
