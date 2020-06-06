@@ -22,23 +22,29 @@ import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.hardware.camera2.*
+import android.media.AudioManager
 import android.media.Image
 import android.media.ImageReader
 import android.media.ImageReader.OnImageAvailableListener
+import android.media.ToneGenerator
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import androidx.core.app.ActivityCompat
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.core.content.ContextCompat
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
 import android.view.*
 import android.widget.Toast
-import kotlinx.android.synthetic.main.tfe_pn_activity_camera.*
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.KeyPoint
 import org.tensorflow.lite.examples.posenet.lib.Person
@@ -46,12 +52,8 @@ import org.tensorflow.lite.examples.posenet.lib.Posenet
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.media.AudioManager
-import android.media.ToneGenerator
+import java.util.Locale;
+import kotlin.properties.Delegates
 
 
 class PosenetActivity :
@@ -62,11 +64,17 @@ class PosenetActivity :
 
   private lateinit var mSensorManager: SensorManager
   private var mAccelerometer: Sensor ?= null
-  var pushups = 0
+  var counter = 0
   var angle = 0.0
   var k = 0
   var start = 0
   val toneG = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+  lateinit var mTTS:TextToSpeech
+  private var pushups by Delegates.observable(0) { property, oldValue, newValue ->
+    mTTS.speak(newValue.toString(), TextToSpeech.QUEUE_ADD, null)
+  }
+
+
 
 
 
@@ -534,6 +542,14 @@ class PosenetActivity :
   /** Draw bitmap on Canvas.   */
   private fun draw(canvas: Canvas, person: Person, bitmap: Bitmap) {
     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+
+    mTTS = TextToSpeech(this.context!!, TextToSpeech.OnInitListener { status ->
+      if (status != TextToSpeech.ERROR){
+        //if there is no error then set language
+        mTTS.language = Locale.UK
+      }
+    })
+
     // Draw `bitmap` and `person` in square canvas.
     val screenWidth: Int
     val screenHeight: Int
@@ -622,7 +638,7 @@ class PosenetActivity :
 
 
   
-    //choose which angle gets detected more accuratly and use that to calculate
+    //choose which angle gets detected more accurately and use that to calculate
     bodySideL = person.keyPoints[5].score.toDouble() + person.keyPoints[7].score.toDouble() +
             person.keyPoints[9].score.toDouble() + person.keyPoints[11].score.toDouble()
     bodySideR = person.keyPoints[6].score.toDouble() + person.keyPoints[8].score.toDouble() +
@@ -665,6 +681,11 @@ class PosenetActivity :
         }
       }
     }
+    counter +=1
+    if (counter % 5 == 0) {
+      pushups+=1
+    }
+
 
     canvas.drawText(
       "Pushups: %s".format(pushups),
