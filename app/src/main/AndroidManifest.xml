@@ -17,9 +17,9 @@
         android:theme="@style/AppTheme.Posenet"
         android:fullBackupContent="true"
         android:allowBackup="true">
-
+        <activity android:name=".RankingActivity" />
         <activity android:name=".TestActivity" />
-        <activity android:name=".RankingActivity" >
+        <activity android:name=".LoginActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
