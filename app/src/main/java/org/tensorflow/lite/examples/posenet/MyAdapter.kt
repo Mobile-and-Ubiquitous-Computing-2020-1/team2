@@ -5,6 +5,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import de.hdodenhof.circleimageview.CircleImageView
 
@@ -32,9 +34,19 @@ class MyAdapter(private val myDataset: MutableList<MemberDTO>) :
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         var d : MemberDTO = myDataset.get(position)
-        holder.view.findViewById<CircleImageView>(R.id.profile_image).setImageResource(d.image);
+        if(d.ranking_num == "1") {
+            holder.view.findViewById<CircleImageView>(R.id.profile_image)
+                .setImageResource(R.drawable.crown);
+            holder.view.findViewById<RelativeLayout>(R.id.item_layout).setBackgroundColor(holder.view.context.getColor(R.color.tfe_color_primary))
+
+        }
+
+        if(d.ranking_num == "Ranking"){
+            val c_layout = holder.view.findViewById<TextView>(R.id.ranking_score).parent as LinearLayout
+            c_layout.setBackgroundColor(holder.view.context.getColor(android.R.color.white))
+        }
         //holder.view.findViewById<TextView>(R.id.ranking_number).setText(ranking_num);
-        holder.view.findViewById<TextView>(R.id.ranking_number).setText(d.ranking_num.toString());
+        holder.view.findViewById<TextView>(R.id.ranking_number).setText(d.ranking_num);
         holder.view.findViewById<TextView>(R.id.user_name).setText(d.name);
         holder.view.findViewById<TextView>(R.id.ranking_score).setText(d.score);
     }

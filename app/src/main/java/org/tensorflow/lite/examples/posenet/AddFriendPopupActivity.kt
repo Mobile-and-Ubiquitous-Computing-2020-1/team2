@@ -21,13 +21,12 @@ class AddFriendPopupActivity : Activity() {
 
         // Instantiate UI instance
         txtText  = findViewById<View>(R.id.txtText) as TextView
-        editText = findViewById<View>(R.id.friendID) as EditText
+        //editText = findViewById<View>(R.id.friendID) as EditText
     }
 
     // On Click "OK"
     fun mOnClose(v: View?) {
         val intent = Intent()
-        intent.putExtra("result", editText.text.toString())
         setResult(RESULT_OK, intent)
         // Close Popup Activity
         finish()

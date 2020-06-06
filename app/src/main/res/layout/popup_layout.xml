@@ -5,13 +5,12 @@
     android:layout_width="300dp"
     android:layout_height="wrap_content">
 
-    <!-- 타이틀바 -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
-            android:text="@string/add_friend"
+            android:text="Detail Information"
             android:textSize="20sp"
             android:textColor="#fff"
             android:gravity="center"
@@ -27,21 +26,17 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+        <!-- You can use this textfield! Dennis! -->
         <TextView
             android:id="@+id/txtText"
-            android:text="@string/friend_id"
+            android:text="Some information ~~~~"
             android:textSize="15sp"
             android:textColor="#000"
             android:alpha="0.87"
             android:gravity="center"
             android:layout_marginBottom="3dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        <EditText
-            android:id="@+id/friendID"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:importantForAutofill="no" />
+            android:layout_height="wrap_content" />
     </LinearLayout>
     <!-- Notice -->
 

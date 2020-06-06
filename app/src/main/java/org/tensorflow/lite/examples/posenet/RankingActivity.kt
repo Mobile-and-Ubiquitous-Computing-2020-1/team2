@@ -75,12 +75,13 @@ class RankingActivity : Activity() {
         if (users != null) {
             users.sortByDescending { user -> user.getTotalScore() }
             memberDTOs.clear()
+            memberDTOs.add(MemberDTO(R.drawable.testimage, "Ranking", "User ID", "Total Score"))
             for (i in 0 until users.size) {
                 var user = users[i]
                 memberDTOs.add(
                     MemberDTO(
                         R.drawable.testimage,
-                        i,
+                        (i+1).toString(),
                         user.id,
                         user.getTotalScore().toString()
                     )
@@ -108,9 +109,7 @@ class RankingActivity : Activity() {
         // Check which request we're responding to
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
-                val friend_id = data.getStringExtra("result")
-                Log.d("TAG", friend_id)
-                //memberDTOs.add(MemberDTO(R.drawable.testimage4, 5, friend_id, "10"))
+
             }
         }
     }
