@@ -20,9 +20,9 @@ class LoginActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(applicationContext)
+        //FirebaseApp.initializeApp(applicationContext)
         setContentView(R.layout.activity_login)
-
+        /*
         valueEventListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val usersType: GenericTypeIndicator<ArrayList<User>> =
@@ -42,9 +42,12 @@ class LoginActivity : Activity() {
             }
         }
         usersRef.addValueEventListener(valueEventListener)
+
+         */
     }
 
     fun onLogin(view: View) {
+        /*
         val login = findViewById<View>(R.id.login) as EditText
         val loginId = login.text.toString()
         Log.d(TAG, loginId)
@@ -63,10 +66,18 @@ class LoginActivity : Activity() {
         intent.putExtra("users", users)
         startActivity(intent)
         finish()
+
+         */
+
+        var intent = Intent(this, RankingActivity::class.java)
+        val login = findViewById<View>(R.id.login) as EditText
+        intent.putExtra("currentUserName", login.text.toString())
+        startActivity(intent)
+        finish()
     }
 
     override fun onStop() {
         super.onStop()
-        usersRef.removeEventListener(valueEventListener)
+        //usersRef.removeEventListener(valueEventListener)
     }
 }

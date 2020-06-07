@@ -12,7 +12,10 @@ import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ScrollView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import com.google.firebase.FirebaseApp
+import com.google.firebase.database.*
 
 class RankingActivity : Activity() {
     private lateinit var recyclerView: RecyclerView
@@ -22,12 +25,55 @@ class RankingActivity : Activity() {
     private var actionBarHeight = 0
     private var memberDTOs = mutableListOf<MemberDTO>()
 
+    private val TAG = RankingActivity::class.java.simpleName
+    private var usersRef = FirebaseDatabase.getInstance().getReference("users")
+    private lateinit var valueEventListener: ValueEventListener
+    private var users: ArrayList<User> = ArrayList()
+    private lateinit var currentUser: User
+
+    private lateinit var currentUserName : String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        FirebaseApp.initializeApp(applicationContext)
         setContentView(R.layout.activity_rank)
 
-        val users: ArrayList<User>? = intent.extras?.get("users") as ArrayList<User>?
-        updateData(users)
+        //val users_origin: ArrayList<User>? = intent.extras?.get("users") as ArrayList<User>?
+        //updateData(users)
+
+        currentUserName = intent.extras?.get("currentUserName") as String
+        valueEventListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val usersType: GenericTypeIndicator<ArrayList<User>> =
+                    object : GenericTypeIndicator<ArrayList<User>>() {}
+                users = dataSnapshot.getValue(usersType) as ArrayList<User>
+                for (user in users) {
+                    Log.d(TAG, user.id.toString())
+                    Log.d(TAG, user.totalScore.toString())
+                    if (user.id.equals(currentUserName)) {
+                        currentUser = user
+                    }
+                }
+                if (!::currentUser.isInitialized) {
+                    currentUser = User(currentUserName)
+                    users.add(currentUser)
+                    usersRef.setValue(users)
+                }
+                updateData(users)
+                viewAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Toast.makeText(
+                    applicationContext,
+                    databaseError.toString(),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        usersRef.addValueEventListener(valueEventListener)
+
 
         val tv = TypedValue()
         if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
@@ -73,7 +119,7 @@ class RankingActivity : Activity() {
     private fun updateData(users: ArrayList<User>?)
     {
         if (users != null) {
-            users.sortByDescending { user -> user.getTotalScore() }
+            users.sortByDescending { user -> user.totalScore }
             memberDTOs.clear()
             memberDTOs.add(MemberDTO(R.drawable.testimage, "Ranking", "User ID", "Total Score"))
             for (i in 0 until users.size) {
@@ -83,7 +129,7 @@ class RankingActivity : Activity() {
                         R.drawable.testimage,
                         (i+1).toString(),
                         user.id,
-                        user.getTotalScore().toString()
+                        user.totalScore.toString()
                     )
                 )
             }
@@ -112,5 +158,11 @@ class RankingActivity : Activity() {
 
             }
         }
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        usersRef.removeEventListener(valueEventListener)
     }
 }

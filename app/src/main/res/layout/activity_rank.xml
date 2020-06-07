@@ -14,7 +14,7 @@
         <ScrollView
             android:id="@+id/ranking_scrollbar"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="400dp"
             android:background="@drawable/stroke_bg"
             android:padding="5dp">
 

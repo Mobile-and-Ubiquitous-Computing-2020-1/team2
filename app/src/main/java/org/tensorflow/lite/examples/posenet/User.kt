@@ -6,10 +6,7 @@ import java.io.Serializable
 @IgnoreExtraProperties
 data class User(
     var id: String = "",
+    var totalScore: Int = 0,
     var friends_id: ArrayList<String> = ArrayList(),
     var scores: ArrayList<Int> = ArrayList()
-) : Serializable {
-    fun getTotalScore(): Int {
-        return scores.sum()
-    }
-}
+)
