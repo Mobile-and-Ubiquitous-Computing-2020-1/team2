@@ -22,8 +22,8 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/black"
-        tools:context="org.tensorflow.lite.examples.posenet.a" >
+        android:background="@android:color/black">
+<!--        tools:context="org.tensorflow.lite.examples.posenet.a" >-->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
