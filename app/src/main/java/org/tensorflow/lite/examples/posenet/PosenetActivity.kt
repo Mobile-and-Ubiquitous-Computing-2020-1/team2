@@ -70,7 +70,7 @@ class PosenetActivity :
   }
 
   var start = 0
-  var counter = 0
+  var counter = true
 
 
 
@@ -546,10 +546,11 @@ class PosenetActivity :
   /** Draw bitmap on Canvas.   */
   private fun draw(canvas: Canvas, person: Person, bitmap: Bitmap) {
     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-    if (counter == 0) {
+    if (counter) {
       mTTS.speak("please put the phone horizontally on the ground and put your body correctly in the frame", TextToSpeech.QUEUE_ADD, null)
-
+      counter = false
     }
+
 
     // Draw `bitmap` and `person` in square canvas.
     val screenWidth: Int
