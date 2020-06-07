@@ -16,6 +16,8 @@
 
 package org.tensorflow.lite.examples.posenet
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -23,17 +25,23 @@ import androidx.appcompat.app.AppCompatActivity
 
 class CameraActivity : AppCompatActivity() {
   private val TAG = "CameraActivity"
+  private lateinit var act : PosenetActivity
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    act = PosenetActivity()
     setContentView(R.layout.tfe_pn_activity_camera)
     savedInstanceState ?: supportFragmentManager.beginTransaction()
-      .replace(R.id.container, PosenetActivity())
+      .replace(R.id.container, act)
       .commit()
   }
 
   fun onClickExit(view: View) {
     Log.d(TAG, "onClickExit")
+    val intent = Intent()
+    Log.d("pushups", act.pushups.toString())
+    intent.putExtra("pushups", act.pushups)
+    setResult(Activity.RESULT_OK, intent)
     finish()
   }
 }

@@ -65,7 +65,7 @@ class PosenetActivity :
   var angle = 0.0
   var k = 0
   lateinit var mTTS:TextToSpeech
-  private var pushups by Delegates.observable(0) { property, oldValue, newValue ->
+  public var pushups by Delegates.observable(0) { property, oldValue, newValue ->
     mTTS.speak(newValue.toString(), TextToSpeech.QUEUE_ADD, null)
   }
 

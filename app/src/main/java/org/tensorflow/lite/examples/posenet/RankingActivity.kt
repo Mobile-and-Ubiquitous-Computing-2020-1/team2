@@ -133,11 +133,13 @@ class RankingActivity : Activity() {
                     )
                 )
             }
+            viewAdapter.notifyDataSetChanged()
         }
     }
 
     fun onStartButtonClick(view : View){
-        startActivity(Intent(this, CameraActivity::class.java))
+        val intent = Intent(this, CameraActivity::class.java)
+        startActivityForResult(intent, 1)
     }
 
     fun mOnPopupClick(view: View) { //데이터 담아서 팝업(액티비티) 호출
@@ -155,12 +157,19 @@ class RankingActivity : Activity() {
         // Check which request we're responding to
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
-
+                val pushups = data.extras?.get("pushups") as Int
+                Log.d(TAG, "pushup : " + pushups.toString())
+                for (i in 0 until users.size){
+                    if(users[i].id.equals(currentUserName)) {
+                        users[i].totalScore = users[i].totalScore + pushups
+                        usersRef.setValue(users)
+                        updateData(users)
+                    }
+                }
             }
         }
 
     }
-
     override fun onStop() {
         super.onStop()
         usersRef.removeEventListener(valueEventListener)
