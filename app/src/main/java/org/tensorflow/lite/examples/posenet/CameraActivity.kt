@@ -17,9 +17,12 @@
 package org.tensorflow.lite.examples.posenet
 
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 
 class CameraActivity : AppCompatActivity() {
+  private val TAG = "CameraActivity"
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -27,5 +30,10 @@ class CameraActivity : AppCompatActivity() {
     savedInstanceState ?: supportFragmentManager.beginTransaction()
       .replace(R.id.container, PosenetActivity())
       .commit()
+  }
+
+  fun onClickExit(view: View) {
+    Log.d(TAG, "onClickExit")
+    finish()
   }
 }
