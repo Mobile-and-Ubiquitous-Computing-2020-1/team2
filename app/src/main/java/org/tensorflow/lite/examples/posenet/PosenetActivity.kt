@@ -27,11 +27,9 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.camera2.*
-import android.media.AudioManager
 import android.media.Image
 import android.media.ImageReader
 import android.media.ImageReader.OnImageAvailableListener
-import android.media.ToneGenerator
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -49,10 +47,10 @@ import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.KeyPoint
 import org.tensorflow.lite.examples.posenet.lib.Person
 import org.tensorflow.lite.examples.posenet.lib.Posenet
+import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
-import java.util.Locale;
 import kotlin.properties.Delegates
 
 
@@ -64,16 +62,15 @@ class PosenetActivity :
 
   private lateinit var mSensorManager: SensorManager
   private var mAccelerometer: Sensor ?= null
-  var counter = 0
   var angle = 0.0
   var k = 0
-  var start = 0
-  val toneG = ToneGenerator(AudioManager.STREAM_ALARM, 100)
   lateinit var mTTS:TextToSpeech
   private var pushups by Delegates.observable(0) { property, oldValue, newValue ->
     mTTS.speak(newValue.toString(), TextToSpeech.QUEUE_ADD, null)
   }
 
+  var start = 0
+  var counter = 0
 
 
 
@@ -107,7 +104,6 @@ class PosenetActivity :
     }
     else if(start == 2 && abs(event.values[0]) > 2 && abs(event.values[2]) > 4){
       start = 0
-      toneG.startTone(ToneGenerator.TONE_CDMA_PIP, 100)
 
     }
     else if(start == 0 && abs(event.values[0]) < 2 && abs(event.values[2]) < 4){
@@ -249,6 +245,7 @@ class PosenetActivity :
     savedInstanceState: Bundle?
   ): View? = inflater.inflate(R.layout.tfe_pn_activity_posenet, container, false)
 
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     surfaceView = view.findViewById(R.id.surfaceView)
     surfaceHolder = surfaceView!!.holder
@@ -261,6 +258,12 @@ class PosenetActivity :
   }
 
   override fun onStart() {
+    mTTS = TextToSpeech(this.context!!, TextToSpeech.OnInitListener { status ->
+      if (status != TextToSpeech.ERROR){
+        //if there is no error then set language
+        mTTS.language = Locale.UK
+      }
+    })
     super.onStart()
     openCamera()
     posenet = Posenet(this.context!!)
@@ -447,6 +450,7 @@ class PosenetActivity :
     }
   }
 
+
   /** A [OnImageAvailableListener] to receive frames as they are available.  */
   private var imageAvailableListener = object : OnImageAvailableListener {
     override fun onImageAvailable(imageReader: ImageReader) {
@@ -542,13 +546,10 @@ class PosenetActivity :
   /** Draw bitmap on Canvas.   */
   private fun draw(canvas: Canvas, person: Person, bitmap: Bitmap) {
     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+    if (counter == 0) {
+      mTTS.speak("please put the phone horizontally on the ground and put your body correctly in the frame", TextToSpeech.QUEUE_ADD, null)
 
-    mTTS = TextToSpeech(this.context!!, TextToSpeech.OnInitListener { status ->
-      if (status != TextToSpeech.ERROR){
-        //if there is no error then set language
-        mTTS.language = Locale.UK
-      }
-    })
+    }
 
     // Draw `bitmap` and `person` in square canvas.
     val screenWidth: Int
@@ -657,11 +658,9 @@ class PosenetActivity :
     //Checking if phone and body is in correct position and notifying user
     if (start == 1 && bodySide > 2.5 && bodyDist > 20) {
       start = 2
-      toneG.startTone(ToneGenerator.TONE_PROP_BEEP2,200)
     }
     else if (start == 2 && (bodySide < 2.5 || bodyDist < 20)) {
       start = 0
-      toneG.startTone(ToneGenerator.TONE_CDMA_PIP, 200)
     }
 
     //If correct position of phone and user count pushups
@@ -681,11 +680,6 @@ class PosenetActivity :
         }
       }
     }
-    counter +=1
-    if (counter % 5 == 0) {
-      pushups+=1
-    }
-
 
     canvas.drawText(
       "Pushups: %s".format(pushups),
@@ -699,7 +693,6 @@ class PosenetActivity :
       (30.0f * heightRatio + bottom),
       paint
     )
-
 
 
     // Draw!
