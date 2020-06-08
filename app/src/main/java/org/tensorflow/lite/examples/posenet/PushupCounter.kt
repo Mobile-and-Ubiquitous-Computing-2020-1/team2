@@ -119,12 +119,11 @@ class PushupCounter {
         return false
     }
 
-    private fun triangulateBodyParts(bodyPart1: BodyPart, bodyPart2: BodyPart, bodyPart3: BodyPart): Double? {
+    private fun triangulateBodyParts(bodyPart1: BodyPart, bodyPart2: BodyPart, bodyPart3: BodyPart): Double {
         val pos1 = person.getPosition(bodyPart1)
-        val pos2 = person.getPosition(bodyPart1)
-        val pos3 = person.getPosition(bodyPart1)
-        return if (pos1 == null || pos2 == null || pos3 == null) null
-            else triangulate(pos1, pos2, pos3)
+        val pos2 = person.getPosition(bodyPart2)
+        val pos3 = person.getPosition(bodyPart3)
+        return triangulate(pos1, pos2, pos3)
     }
 
     private fun triangulate(pos1: Position, pos2: Position, pos3: Position): Double {
