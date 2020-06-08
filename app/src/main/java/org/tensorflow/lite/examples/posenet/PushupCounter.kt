@@ -12,10 +12,10 @@ class PushupCounter {
 
     // Constants
     private val confidenceThreshold: Float = 0.5f
-    private val shoulderDistanceThreshold: Float = 1f/6
+    private val shoulderDistanceThreshold: Float = 0.25f
     private val errorRateThreshold: Float = 0.5f
     private val windowSize = 10
-    private val shoulderYThreshold = 0.09
+    private val shoulderYThreshold = 0.09f
 
     // Windows for smoothing
     private val unitLengthWindow = ArrayDeque<Double>(windowSize)
@@ -56,7 +56,7 @@ class PushupCounter {
 
         this.person = person
         updateStates()
-        Log.d(TAG, "unitLength: " + unitLength + "min: " + minYShoulder + ", max: " + maxYShoulder + ", current: " + smoothedYShoulder + ", count: " + numPushup)
+        Log.d(TAG, "direction : " + direction + " unitLength: " + unitLength + " min: " + minYShoulder + ", max: " + maxYShoulder + ", current: " + smoothedYShoulder + ", count: " + numPushup)
 
         numFrameFromPushup++
         return when {
@@ -131,7 +131,7 @@ class PushupCounter {
             Log.d(TAG, "hipAngle: " + hipAngle)
             return true
         }
-        if (kneeAngle <= 140 || kneeAngle >= 210) {
+        if (kneeAngle <= 150 || kneeAngle >= 220) {
             Log.d(TAG, "kneeAngle: " + kneeAngle)
             return true
         }
@@ -151,7 +151,7 @@ class PushupCounter {
         val cos = vec21 * vec23 / (vec21.size() * vec23.size())
         val theta = Math.acos(cos) * 180 / Math.PI
         val sign = (pos2.x - pos1.x) * (pos3.y - pos1.y) - (pos2.y - pos1.y) * (pos3.x - pos1.x) > 0
-        return if (sign && direction == Direction.RIGHT || !sign && direction == Direction.LEFT) theta
+        return if ((sign && direction == Direction.RIGHT) || (!sign && direction == Direction.LEFT)) theta
             else 360 - theta
     }
 
