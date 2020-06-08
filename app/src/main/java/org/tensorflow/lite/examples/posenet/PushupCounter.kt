@@ -14,8 +14,8 @@ class PushupCounter {
     private val confidenceThreshold: Float = 0.5f
     private val shoulderDistanceThreshold: Float = 1f/6
     private val errorRateThreshold: Float = 0.5f
-    private val windowSize = 30
-    private val shoulderYThreshold = 0.15
+    private val windowSize = 10
+    private val shoulderYThreshold = 0.09
 
     // Windows for smoothing
     private val unitLengthWindow = ArrayDeque<Double>(windowSize)
@@ -52,13 +52,17 @@ class PushupCounter {
 
     fun count(person: Person, isAccError: Boolean): PushupResult {
 //        Log.d(TAG, "numFrameFromPushup: " + numFrameFromPushup + ", numErrorFrame: " + numErrorFrame + ", numPushup: " + numPushup)
-        Log.d(TAG, "pushupStarted: " + pushupStarted)
+//        Log.d(TAG, "pushupStarted: " + pushupStarted)
+
         this.person = person
         updateStates()
+        Log.d(TAG, "unitLength: " + unitLength + "min: " + minYShoulder + ", max: " + maxYShoulder + ", current: " + smoothedYShoulder + ", count: " + numPushup)
 
         numFrameFromPushup++
         return when {
             isAccError || isCameraAngleError() -> {
+                if (isAccError)
+                    Log.d(TAG, "Acc Error")
                 numErrorFrame++
                 PushupResult(0, true, false)
             }
@@ -67,7 +71,6 @@ class PushupCounter {
                 PushupResult(0, false, true)
             }
             else -> {
-                numPushup += 1
                 updateState()
                 PushupResult(numPushup)
             }
@@ -96,9 +99,16 @@ class PushupCounter {
             }
         }
         val shoulderDistance = (leftShoulderPos - rightShoulderPos).size()
-        Log.d(TAG, "isCameraAngleError: num_high_confidence_parts: " + num_high_confidence_parts + "/" + sideBodyParts.size)
-        return sideBodyParts.size - num_high_confidence_parts > 1 // The confidence of half body parts should be high
-                || shoulderDistance > shoulderDistanceThreshold * smoothedUnitLength
+//        Log.d(TAG, "isCameraAngleError: num_high_confidence_parts: " + num_high_confidence_parts + "/" + sideBodyParts.size)
+        if (sideBodyParts.size - num_high_confidence_parts > 1) {// The confidence of half body parts should be high
+            Log.d(TAG, "confidence")
+            return true
+        }
+        if (shoulderDistance > shoulderDistanceThreshold * smoothedUnitLength) {
+            Log.d(TAG, "shoulder")
+            return true
+        }
+        return false
     }
 
     private fun isPoseError(): Boolean {
@@ -114,12 +124,15 @@ class PushupCounter {
             return true
         }
         if (bodyAngle <= 0 || bodyAngle >= 60) {
+            Log.d(TAG, "bodyAngle: " + bodyAngle)
             return true
         }
         if (hipAngle <= 120 || hipAngle >= 210) {
+            Log.d(TAG, "hipAngle: " + hipAngle)
             return true
         }
         if (kneeAngle <= 140 || kneeAngle >= 210) {
+            Log.d(TAG, "kneeAngle: " + kneeAngle)
             return true
         }
         return false
@@ -169,7 +182,7 @@ class PushupCounter {
     private fun updateDirection() {
         val sumXShoulder = person.getPosition(BodyPart.LEFT_SHOULDER).x + person.getPosition(BodyPart.RIGHT_SHOULDER).x
         val sumXAnkle = person.getPosition(BodyPart.LEFT_ANKLE).x + person.getPosition(BodyPart.RIGHT_ANKLE).x
-        direction = if (sumXAnkle > sumXShoulder) Direction.LEFT else Direction.RIGHT
+        direction = if (sumXAnkle < sumXShoulder) Direction.LEFT else Direction.RIGHT
     }
 
     private fun updateUnitLength() {
@@ -183,7 +196,7 @@ class PushupCounter {
             unitLengthWindow.removeFirst()
         }
         val windowMidIndex = min(unitLengthWindow.size, windowSize) / 2
-        smoothedUnitLength = unitLengthWindow.sorted()[windowMidIndex]
+        smoothedUnitLength = unitLengthWindow.sorted()[0]
     }
 
     private fun updateShoulderY() {
