@@ -145,7 +145,7 @@ class RankingActivity : Activity() {
     fun mOnPopupClick(view: View) { //데이터 담아서 팝업(액티비티) 호출
         val intent = Intent(this, AddFriendPopupActivity::class.java)
         //intent.putExtra("data", "Test Popup");
-        startActivityForResult(intent, 1)
+        startActivityForResult(intent, 2)
     }
 
     override fun onActivityResult(
