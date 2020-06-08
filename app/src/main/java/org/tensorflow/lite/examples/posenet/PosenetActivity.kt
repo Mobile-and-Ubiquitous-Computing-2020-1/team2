@@ -591,6 +591,8 @@ class PosenetActivity :
 
     // Perform inference.
     val person = posenet.estimateSinglePose(scaledBitmap)
+
+    // Deal with inference result
     val countType = pushupCounter.count(person, isRightCameraPosition)
     when (countType) {
       CountType.SUCCESS -> pushups += 1
@@ -599,6 +601,7 @@ class PosenetActivity :
 //      CountType.PROGRESS ->
 //      CountType.PROGRESS ->
     }
+
     val canvas: Canvas = surfaceHolder!!.lockCanvas()
     draw(canvas, person, scaledBitmap)
   }
