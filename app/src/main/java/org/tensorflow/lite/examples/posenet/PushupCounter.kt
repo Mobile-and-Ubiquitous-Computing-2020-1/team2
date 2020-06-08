@@ -1,5 +1,6 @@
 package org.tensorflow.lite.examples.posenet
 
+import android.util.Log
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.Person
 import org.tensorflow.lite.examples.posenet.lib.Position
@@ -7,13 +8,13 @@ import java.util.*
 import kotlin.math.min
 
 class PushupCounter {
+    private val TAG = "PushupCounter"
 
     // Constants
     private val confidenceThreshold: Float = 0.5f
     private val shoulderDistanceThreshold: Float = 1f/6
     private val errorRateThreshold: Float = 0.5f
-    private val sampleInterval = 30 // TODO
-    private val windowSize = 1000 / sampleInterval
+    private val windowSize = 30
     private val shoulderYThreshold = 1f/5
 
     // Windows for smoothing
@@ -50,6 +51,7 @@ class PushupCounter {
     )
 
     fun count(person: Person, isAccError: Boolean): PushupResult {
+//        Log.d(TAG, "numFrameFromPushup: " + numFrameFromPushup + ", numErrorFrame: " + numErrorFrame + ", numPushup: " + numPushup)
         this.person = person
         updateStates()
 
@@ -93,9 +95,9 @@ class PushupCounter {
             }
         }
         val shoulderDistance = (leftShoulderPos - rightShoulderPos).size()
-
+        Log.d(TAG, "isCameraAngleError: num_high_confidence_parts: " + num_high_confidence_parts)
         return sideBodyParts.size - num_high_confidence_parts > 1 // The confidence of half body parts should be high
-                && shoulderDistance > shoulderDistanceThreshold * smoothedUnitLength
+                || shoulderDistance > shoulderDistanceThreshold * smoothedUnitLength
     }
 
     private fun isPoseError(): Boolean {
