@@ -84,7 +84,7 @@ class TestActivity : AppCompatActivity() {
 //      R.raw.regular_other_person,
 //      R.raw.right_arm_mirror,
 //      R.raw.wide
-      )
+    )
 
     val dirnameList = arrayOf("")
 //    val dirnameList = arrayOf(
