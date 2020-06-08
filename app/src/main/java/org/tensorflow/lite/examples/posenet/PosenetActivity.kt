@@ -71,6 +71,10 @@ class PosenetActivity :
 
   var start = 0
   var counter = true
+  var ten = true
+  var hundred = true
+  var thousend = true
+
 
 
 
@@ -551,6 +555,20 @@ class PosenetActivity :
       counter = false
     }
 
+    if (pushups == 10  && ten) {
+      mTTS.speak("Good job! Keep on going.", TextToSpeech.QUEUE_ADD, null)
+      ten = false
+    }
+
+    if (pushups == 100) {
+      mTTS.speak("Wow! You are really going strong this time", TextToSpeech.QUEUE_ADD, null)
+      hundred = false
+    }
+
+    if (pushups == 1000) {
+      mTTS.speak("Just three words.You.Are.Insane!", TextToSpeech.QUEUE_ADD, null)
+      thousend = false
+    }
 
     // Draw `bitmap` and `person` in square canvas.
     val screenWidth: Int
