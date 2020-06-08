@@ -3,7 +3,8 @@ package org.tensorflow.lite.examples.posenet
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
 import org.tensorflow.lite.examples.posenet.lib.Person
 import org.tensorflow.lite.examples.posenet.lib.Position
-import java.util.ArrayDeque
+import java.util.*
+import kotlin.math.min
 
 class PushupCounter {
 
@@ -13,23 +14,26 @@ class PushupCounter {
     private val errorRateThreshold: Float = 0.5f
     private val sampleInterval = 30 // TODO
     private val windowSize = 1000 / sampleInterval
+    private val shoulderYThreshold = 1f/5
 
     // Windows for smoothing
-    private val unitLengthWindow = ArrayDeque<Float>()
-    private val shoulderYWindow = ArrayDeque<Float>()
+    private val unitLengthWindow = ArrayDeque<Double>(windowSize)
+    private val yShoulderWindow = ArrayDeque<Int>(windowSize)
 
-    // States changing in real-time
+    // Real-time changing states
     private var person: Person = Person()
     private var direction: Direction = Direction.LEFT
-    private var smoothedUnitLength = 0
-    private var smoothedShoulderY = 0
+    private var smoothedUnitLength = .0
+    private var smoothedYShoulder = 0
+    private var unitLength: Double = .0
+    private var maxYShoulder = 0
+    private var minYShoulder = 0
+    private var pushupStarted = false
+    private var numFrameFromPushup: Int = 0  // The number of the frames from the start of the current push-up
+    private var numErrorFrame: Int = 0
+    private var numPushup: Int = 0
 
-    private var unitLength: Float = 0f
-
-    // Count
-    private var totalCount: Int = 0
-
-    // Only important body parts
+    // Body parts for counting
     private val LEFT_BODY_PARTS = setOf(
         BodyPart.LEFT_SHOULDER,
         BodyPart.LEFT_WRIST,
@@ -45,21 +49,21 @@ class PushupCounter {
         BodyPart.RIGHT_ANKLE
     )
 
-    fun count(person: Person /* TODO Add camera angle flag (accelerometer) */): PushupResult {
+    fun count(person: Person, isAccError: Boolean): PushupResult {
         this.person = person
         updateStates()
 
-        when {
-            isCameraAngleError() -> {
-                return PushupResult(0, true, false)
+        return when {
+            isAccError || isCameraAngleError() -> {
+                PushupResult(0, true, false)
             }
             isPoseError() -> {
-                return PushupResult(0, false, true)
+                PushupResult(0, false, true)
             }
             else -> {
-                totalCount += 1
+                numPushup += 1
                 updateState()
-                return PushupResult(totalCount)
+                PushupResult(numPushup)
             }
         }
     }
@@ -119,10 +123,8 @@ class PushupCounter {
         val pos1 = person.getPosition(bodyPart1)
         val pos2 = person.getPosition(bodyPart1)
         val pos3 = person.getPosition(bodyPart1)
-        if (pos1 == null || pos2 == null || pos3 == null) {
-            return null
-        }
-        return triangulate(pos1, pos2, pos3)
+        return if (pos1 == null || pos2 == null || pos3 == null) null
+            else triangulate(pos1, pos2, pos3)
     }
 
     private fun triangulate(pos1: Position, pos2: Position, pos3: Position): Double {
@@ -131,11 +133,26 @@ class PushupCounter {
         val cos = vec21 * vec23 / (vec21.size() * vec23.size())
         val theta = Math.acos(cos) * 180 / Math.PI
         val sign = (pos2.x - pos1.x) * (pos3.y - pos1.y) - (pos2.y - pos1.y) * (pos3.x - pos1.x) > 0
-        return if (sign && direction == Direction.RIGHT || !sign && direction == Direction.LEFT) theta else 360 - theta
+        return if (sign && direction == Direction.RIGHT || !sign && direction == Direction.LEFT) theta
+            else 360 - theta
     }
 
     private fun updateState() {
-
+        if (maxYShoulder < smoothedYShoulder) maxYShoulder = smoothedYShoulder
+        if (minYShoulder > smoothedYShoulder) minYShoulder = smoothedYShoulder
+        if (maxYShoulder - minYShoulder > shoulderYThreshold * smoothedUnitLength) {
+            if (pushupStarted && minYShoulder != smoothedYShoulder) {
+                if (numErrorFrame / numFrameFromPushup < errorRateThreshold) {
+                    numPushup++
+                }
+                numFrameFromPushup = 0
+                numErrorFrame++
+            } else {
+                pushupStarted = true
+            }
+            minYShoulder = smoothedYShoulder
+            maxYShoulder = smoothedYShoulder
+        }
     }
 
     private fun updateStates() {
@@ -145,43 +162,53 @@ class PushupCounter {
     }
 
     private fun updateDirection() {
-        // TODO
-        direction = Direction.LEFT
+        val sumXShoulder = person.getPosition(BodyPart.LEFT_SHOULDER).x + person.getPosition(BodyPart.RIGHT_SHOULDER).x
+        val sumXAnkle = person.getPosition(BodyPart.LEFT_ANKLE).x + person.getPosition(BodyPart.RIGHT_ANKLE).x
+        direction = if (sumXAnkle > sumXShoulder) Direction.LEFT else Direction.RIGHT
     }
 
     private fun updateUnitLength() {
-        // TODO
-        unitLength = 0f
+        val posShoulder = getSideBodyPartPosition(OneSideBodyPart.SHOULDER)
+        val posHip = getSideBodyPartPosition(OneSideBodyPart.HIP)
+        val posKnee = getSideBodyPartPosition(OneSideBodyPart.KNEE)
+        val posAnkle = getSideBodyPartPosition(OneSideBodyPart.KNEE)  // TODO:KNEE => ANKLE
+        unitLength = (posShoulder - posHip).size() + (posHip - posKnee).size() + (posKnee - posAnkle).size()
+        unitLengthWindow.addLast(unitLength)
+        if (unitLengthWindow.size > windowSize) {
+            unitLengthWindow.removeFirst()
+        }
+        val windowMidIndex = min(unitLengthWindow.size, windowSize) / 2
+        smoothedUnitLength = unitLengthWindow.sorted()[windowMidIndex]
     }
 
     private fun updateShoulderY() {
-
+        val yShoulder = getSideBodyPartPosition(OneSideBodyPart.SHOULDER).y
+        yShoulderWindow.addLast(yShoulder)
+        if (yShoulderWindow.size > windowSize) {
+            yShoulderWindow.removeFirst()
+        }
+        val windowMidIndex = min(yShoulderWindow.size, windowSize) / 2
+        smoothedYShoulder = yShoulderWindow.sorted()[windowMidIndex]
     }
 
-    private fun getSideBodyPartPosition(oneSideBodyPart: OneSideBodyPart): Position? {
+    private fun getSideBodyPartPosition(oneSideBodyPart: OneSideBodyPart): Position {
         val bodyPart = hashMapOf(
             Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE)
+            Pair(Pair(Direction.LEFT, OneSideBodyPart.WRIST), BodyPart.LEFT_WRIST),
+            Pair(Pair(Direction.LEFT, OneSideBodyPart.SHOULDER), BodyPart.LEFT_SHOULDER),
+            Pair(Pair(Direction.LEFT, OneSideBodyPart.KNEE), BodyPart.LEFT_KNEE),
+            Pair(Pair(Direction.LEFT, OneSideBodyPart.HIP), BodyPart.LEFT_HIP),
+            Pair(Pair(Direction.RIGHT, OneSideBodyPart.ANKLE), BodyPart.RIGHT_ANKLE),
+            Pair(Pair(Direction.RIGHT, OneSideBodyPart.WRIST), BodyPart.RIGHT_WRIST),
+            Pair(Pair(Direction.RIGHT, OneSideBodyPart.SHOULDER), BodyPart.RIGHT_SHOULDER),
+            Pair(Pair(Direction.RIGHT, OneSideBodyPart.KNEE), BodyPart.RIGHT_KNEE),
+            Pair(Pair(Direction.RIGHT, OneSideBodyPart.HIP), BodyPart.RIGHT_HIP)
         )[Pair(direction, oneSideBodyPart)]
-        if (bodyPart == null) {
-            return null
-        } else {
-            return person.getPosition(bodyPart)
-        }
+        return if (bodyPart == null) Position() else person.getPosition(bodyPart)
     }
 }
 
-private enum class OneSideBodyPart {
-    WRIST, ANKLE, SHOULDER, KNEE, HIP
-}
+private enum class OneSideBodyPart { WRIST, ANKLE, SHOULDER, KNEE, HIP }
 
 class PushupResult(
     val count: Int,
@@ -189,6 +216,4 @@ class PushupResult(
     val isPoseError: Boolean = false
 )
 
-private enum class Direction {
-    LEFT, RIGHT
-}
+private enum class Direction { LEFT, RIGHT }
