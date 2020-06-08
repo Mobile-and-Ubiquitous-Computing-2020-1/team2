@@ -581,6 +581,8 @@ class PosenetActivity :
     surfaceHolder!!.unlockCanvasAndPost(canvas)
   }
 
+  val mTTSinterval = 1000
+  var mTTScount = 0
   /** Process image using Posenet library.   */
   private fun processImage(bitmap: Bitmap) {
     // Crop bitmap.
@@ -595,10 +597,18 @@ class PosenetActivity :
     // Deal with inference result
     val pushupResult: PushupResult = pushupCounter.count(person)
     if (pushupResult.isCameraAngleError) {
-      mTTS.speak("Camera position error has occurred.", TextToSpeech.QUEUE_FLUSH, null, null)
+      when {
+        mTTScount == 0 -> mTTS.speak("Camera position error", TextToSpeech.QUEUE_FLUSH, null, null)
+        mTTScount > mTTSinterval -> mTTScount = 0
+        else -> mTTScount += 1
+      }
     }
     else if (pushupResult.isPoseError) {
-      mTTS.speak("Pose error has occurred.", TextToSpeech.QUEUE_FLUSH, null, null)
+      when {
+        mTTScount == 0 -> mTTS.speak("Pose error", TextToSpeech.QUEUE_FLUSH, null, null)
+        mTTScount > mTTSinterval -> mTTScount = 0
+        else -> mTTScount += 1
+      }
     }
     else {
       if (pushups < pushupResult.count) {

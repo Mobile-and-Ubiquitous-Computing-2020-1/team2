@@ -169,7 +169,7 @@ class PushupCounter {
             Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
             Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
             Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
-            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE),
+            Pair(Pair(Direction.LEFT, OneSideBodyPart.ANKLE), BodyPart.LEFT_ANKLE)
         )[Pair(direction, oneSideBodyPart)]
         if (bodyPart == null) {
             return null
