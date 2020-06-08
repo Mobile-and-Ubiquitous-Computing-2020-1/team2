@@ -53,11 +53,14 @@ class PushupCounter {
         this.person = person
         updateStates()
 
+        numFrameFromPushup++
         return when {
             isAccError || isCameraAngleError() -> {
+                numErrorFrame++
                 PushupResult(0, true, false)
             }
             isPoseError() -> {
+                numErrorFrame++
                 PushupResult(0, false, true)
             }
             else -> {
@@ -145,7 +148,7 @@ class PushupCounter {
                     numPushup++
                 }
                 numFrameFromPushup = 0
-                numErrorFrame++
+                numErrorFrame = 0
             } else {
                 pushupStarted = true
             }

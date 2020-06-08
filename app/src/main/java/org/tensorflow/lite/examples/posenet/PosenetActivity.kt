@@ -582,32 +582,32 @@ class PosenetActivity :
   }
 
   val mTTSinterval = 5
-  var mTTScount = 0
-  /** Process image using Posenet library.   */
-  private fun processImage(bitmap: Bitmap) {
-    // Crop bitmap.
-    val croppedBitmap = cropBitmap(bitmap)
+    var mTTScount = 0
+    /** Process image using Posenet library.   */
+    private fun processImage(bitmap: Bitmap) {
+      // Crop bitmap.
+      val croppedBitmap = cropBitmap(bitmap)
 
-    // Created scaled version of bitmap for model input.
-    val scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, MODEL_WIDTH, MODEL_HEIGHT, true)
+      // Created scaled version of bitmap for model input.
+          val scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, MODEL_WIDTH, MODEL_HEIGHT, true)
 
-    // Perform inference.
-    val person = posenet.estimateSinglePose(scaledBitmap)
+        // Perform inference.
+          val person = posenet.estimateSinglePose(scaledBitmap)
 
-    // Deal with inference result
-    val pushupResult: PushupResult = pushupCounter.count(person, isRightCameraPosition)
-    if (pushupResult.count > pushups) {
-      mTTS.speak("Counted", TextToSpeech.QUEUE_FLUSH, null, null)
-      pushups = pushupResult.count
-    } else if (mTTScount == mTTSinterval) {
-      when {
-        pushupResult.isCameraAngleError -> mTTS.speak(
-          "Camera position error",
-          TextToSpeech.QUEUE_FLUSH,
-          null,
-          null
-        )
-        pushupResult.isPoseError -> mTTS.speak("Pose error", TextToSpeech.QUEUE_FLUSH, null, null)
+        // Deal with inference result
+          val pushupResult: PushupResult = pushupCounter.count(person, isRightCameraPosition)
+        if (pushupResult.count > pushups) {
+          mTTS.speak("" + pushups, TextToSpeech.QUEUE_FLUSH, null, null)
+          pushups = pushupResult.count
+        } else if (mTTScount == mTTSinterval) {
+          when {
+            pushupResult.isCameraAngleError -> mTTS.speak(
+              "Camera position error",
+              TextToSpeech.QUEUE_FLUSH,
+              null,
+              null
+            )
+            pushupResult.isPoseError -> mTTS.speak("Pose error", TextToSpeech.QUEUE_FLUSH, null, null)
       }
       mTTScount = 0
     } else {
