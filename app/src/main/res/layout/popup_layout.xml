@@ -41,7 +41,7 @@
             android:text="MotiHomeT is designed to automatically count push-ups. It utilizes pose estimation to calculate different metrics about the body of a user, which in turn is used to count push-ups.
 If the app does not count the push-ups in the way you want to, try one of the following:
 \n\n 1. Move further away from the camera. The app wil crop the outer parts of the video, so make sure your body is properly centered
-\n\n 2. The app works best if you are facing the camera in a 45 degree angle.
+\n\n 2. The app works best if you are facing the camera directly from the side.
 \n\n 3. If the color of the background and your clothing is to similar, the app can not detect your pose properly. Try to change your clothing.
 \n\n 4. The app is designed in a way that the phone has to be horizontally. Try to put your phone flat on the ground and lean it against a wall
 
