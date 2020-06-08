@@ -593,13 +593,18 @@ class PosenetActivity :
     val person = posenet.estimateSinglePose(scaledBitmap)
 
     // Deal with inference result
-    val countType = pushupCounter.count(person, isRightCameraPosition)
-    when (countType) {
-      CountType.SUCCESS -> pushups += 1
-//      CountType.PROGRESS ->
-//      CountType.PROGRESS ->
-//      CountType.PROGRESS ->
-//      CountType.PROGRESS ->
+    val pushupResult: PushupResult = pushupCounter.count(person)
+    if (pushupResult.isCameraAngleError) {
+      mTTS.speak("Camera position error has occurred.", TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+    else if (pushupResult.isPoseError) {
+      mTTS.speak("Pose error has occurred.", TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+    else {
+      if (pushups < pushupResult.count) {
+        mTTS.speak("Counted", TextToSpeech.QUEUE_FLUSH, null, null)
+        pushups = pushupResult.count
+      }
     }
 
     val canvas: Canvas = surfaceHolder!!.lockCanvas()
