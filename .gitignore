@@ -1,6 +1,5 @@
 # video files
 app/src/main/res/raw/
-android/.idea/
 
 # firebase key
 app/google-services.json

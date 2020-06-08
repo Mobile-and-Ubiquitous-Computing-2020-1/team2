@@ -24,13 +24,13 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 
 class CameraActivity : AppCompatActivity() {
-  private val TAG = "CameraActivity"
+  private val TAG = CameraActivity::class.java.simpleName
   private lateinit var act : PosenetActivity
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    act = PosenetActivity()
     setContentView(R.layout.tfe_pn_activity_camera)
+    act = PosenetActivity()
     savedInstanceState ?: supportFragmentManager.beginTransaction()
       .replace(R.id.container, act)
       .commit()
