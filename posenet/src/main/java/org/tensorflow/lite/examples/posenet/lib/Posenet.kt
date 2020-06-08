@@ -52,10 +52,21 @@ enum class BodyPart {
 class Position {
   var x: Int = 0
   var y: Int = 0
+
+  operator fun minus(pos: Position): Vector {
+    return Vector(x - pos.x, y - pos.y)
+  }
 }
 
-fun distance(pos1: Position, pos2: Position): Double {
-  return Math.sqrt(Math.pow((pos1.x - pos2.x).toDouble(), 2.0) + Math.pow((pos1.y - pos2.y).toDouble(), 2.0))
+class Vector(var x: Int = 0, var y: Int = 0) {
+
+  fun size(): Double {
+    return Math.sqrt(Math.pow(x.toDouble(), 2.0) + Math.pow(y.toDouble(), 2.0))
+  }
+
+  operator fun times(vec: Vector): Int {
+    return x * vec.x + y * vec.y
+  }
 }
 
 class KeyPoint {
@@ -67,6 +78,15 @@ class KeyPoint {
 class Person {
   var keyPoints = listOf<KeyPoint>()
   var score: Float = 0.0f
+
+  fun getPosition(bodyPart: BodyPart): Position {
+    for (keyPoint in keyPoints) {
+      if (keyPoint.bodyPart.equals(bodyPart)) {
+        return keyPoint.position
+      }
+    }
+    return null
+  }
 }
 
 enum class Device {
