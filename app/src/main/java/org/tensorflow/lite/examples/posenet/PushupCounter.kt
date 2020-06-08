@@ -49,12 +49,12 @@ class PushupCounter {
         BodyPart.RIGHT_ANKLE
     )
 
-    fun count(person: Person /* TODO Add camera angle flag (accelerometer) */): PushupResult {
+    fun count(person: Person, isAccError: Boolean): PushupResult {
         this.person = person
         updateStates()
 
         return when {
-            isCameraAngleError() -> {
+            isAccError || isCameraAngleError() -> {
                 PushupResult(0, true, false)
             }
             isPoseError() -> {
