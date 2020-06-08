@@ -581,7 +581,7 @@ class PosenetActivity :
     surfaceHolder!!.unlockCanvasAndPost(canvas)
   }
 
-  val mTTSinterval = 1000
+  val mTTSinterval = 5
   var mTTScount = 0
   /** Process image using Posenet library.   */
   private fun processImage(bitmap: Bitmap) {
@@ -596,27 +596,23 @@ class PosenetActivity :
 
     // Deal with inference result
     val pushupResult: PushupResult = pushupCounter.count(person, isRightCameraPosition)
-    if (pushupResult.isCameraAngleError) {
+    if (pushupResult.count > pushups) {
+      mTTS.speak("Counted", TextToSpeech.QUEUE_FLUSH, null, null)
+      pushups = pushupResult.count
+    } else if (mTTScount == mTTSinterval) {
       when {
-        mTTScount == 0 -> mTTS.speak("Camera position error", TextToSpeech.QUEUE_FLUSH, null, null)
-        mTTScount > mTTSinterval -> mTTScount = 0
-        else -> mTTScount += 1
+        pushupResult.isCameraAngleError -> mTTS.speak(
+          "Camera position error",
+          TextToSpeech.QUEUE_FLUSH,
+          null,
+          null
+        )
+        pushupResult.isPoseError -> mTTS.speak("Pose error", TextToSpeech.QUEUE_FLUSH, null, null)
       }
+      mTTScount = 0
+    } else {
+      mTTScount++
     }
-    else if (pushupResult.isPoseError) {
-      when {
-        mTTScount == 0 -> mTTS.speak("Pose error", TextToSpeech.QUEUE_FLUSH, null, null)
-        mTTScount > mTTSinterval -> mTTScount = 0
-        else -> mTTScount += 1
-      }
-    }
-    else {
-      if (pushups < pushupResult.count) {
-        mTTS.speak("Counted", TextToSpeech.QUEUE_FLUSH, null, null)
-        pushups = pushupResult.count
-      }
-    }
-
     val canvas: Canvas = surfaceHolder!!.lockCanvas()
     draw(canvas, person, scaledBitmap)
   }
