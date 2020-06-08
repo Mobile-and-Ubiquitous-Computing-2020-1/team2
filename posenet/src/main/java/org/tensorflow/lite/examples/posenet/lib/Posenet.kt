@@ -79,7 +79,7 @@ class Person {
   var keyPoints = listOf<KeyPoint>()
   var score: Float = 0.0f
 
-  fun getPosition(bodyPart: BodyPart): Position? {
+  fun getPosition(bodyPart: BodyPart): Position {
     for (keyPoint in keyPoints) {
       if (keyPoint.bodyPart.equals(bodyPart)) {
         return keyPoint.position

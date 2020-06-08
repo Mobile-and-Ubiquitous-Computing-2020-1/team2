@@ -595,7 +595,7 @@ class PosenetActivity :
     val person = posenet.estimateSinglePose(scaledBitmap)
 
     // Deal with inference result
-    val pushupResult: PushupResult = pushupCounter.count(person)
+    val pushupResult: PushupResult = pushupCounter.count(person, isRightCameraPosition)
     if (pushupResult.isCameraAngleError) {
       when {
         mTTScount == 0 -> mTTS.speak("Camera position error", TextToSpeech.QUEUE_FLUSH, null, null)
