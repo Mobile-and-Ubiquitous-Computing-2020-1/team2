@@ -54,6 +54,10 @@ class Position {
   var y: Int = 0
 }
 
+fun distance(pos1: Position, pos2: Position): Double {
+  return Math.sqrt(Math.pow((pos1.x - pos2.x).toDouble(), 2.0) + Math.pow((pos1.y - pos2.y).toDouble(), 2.0))
+}
+
 class KeyPoint {
   var bodyPart: BodyPart = BodyPart.NOSE
   var position: Position = Position()
