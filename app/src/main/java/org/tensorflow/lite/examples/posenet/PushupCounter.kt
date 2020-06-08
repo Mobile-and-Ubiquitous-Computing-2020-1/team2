@@ -15,7 +15,7 @@ class PushupCounter {
     private val shoulderDistanceThreshold: Float = 0.25f
     private val errorRateThreshold: Float = 0.5f
     private val windowSize = 10
-    private val shoulderYThreshold = 0.09f
+    private val shoulderYThreshold = 0.1f
 
     // Windows for smoothing
     private val unitLengthWindow = ArrayDeque<Double>(windowSize)
@@ -56,7 +56,7 @@ class PushupCounter {
 
         this.person = person
         updateStates()
-        Log.d(TAG, "direction : " + direction + " unitLength: " + unitLength + " min: " + minYShoulder + ", max: " + maxYShoulder + ", current: " + smoothedYShoulder + ", count: " + numPushup)
+        Log.d(TAG, "direction : " + direction + " unitLength: " + smoothedUnitLength + " min: " + minYShoulder + ", max: " + maxYShoulder + ", current: " + smoothedYShoulder + ", count: " + numPushup)
 
         numFrameFromPushup++
         return when {
