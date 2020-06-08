@@ -85,7 +85,7 @@ class Person {
         return keyPoint.position
       }
     }
-    return null
+    return Position()
   }
 }
 
