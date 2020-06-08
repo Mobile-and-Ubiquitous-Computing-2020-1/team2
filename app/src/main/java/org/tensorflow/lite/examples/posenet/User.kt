@@ -1,7 +1,6 @@
 package org.tensorflow.lite.examples.posenet
 
 import com.google.firebase.database.IgnoreExtraProperties
-import java.io.Serializable
 
 @IgnoreExtraProperties
 data class User(

@@ -14,7 +14,7 @@
         <ScrollView
             android:id="@+id/ranking_scrollbar"
             android:layout_width="match_parent"
-            android:layout_height="400dp"
+            android:layout_height="500dp"
             android:background="@drawable/stroke_bg"
             android:padding="5dp">
 
@@ -35,7 +35,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="50dp"
         android:onClick="onStartButtonClick"
         android:text="Start" />
 

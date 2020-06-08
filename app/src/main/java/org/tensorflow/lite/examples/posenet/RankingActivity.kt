@@ -3,7 +3,6 @@ package org.tensorflow.lite.examples.posenet
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
-import android.os.Build
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,9 +12,9 @@ import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ScrollView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.*
+
 
 class RankingActivity : Activity() {
     private lateinit var recyclerView: RecyclerView
@@ -33,25 +32,23 @@ class RankingActivity : Activity() {
 
     private lateinit var currentUserName : String
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         FirebaseApp.initializeApp(applicationContext)
         setContentView(R.layout.activity_rank)
 
-        //val users_origin: ArrayList<User>? = intent.extras?.get("users") as ArrayList<User>?
-        //updateData(users)
-
-        currentUserName = intent.extras?.get("currentUserName") as String
+        currentUserName = intent.extras!!.get("currentUserName") as String
         valueEventListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val usersType: GenericTypeIndicator<ArrayList<User>> =
                     object : GenericTypeIndicator<ArrayList<User>>() {}
                 users = dataSnapshot.getValue(usersType) as ArrayList<User>
                 for (user in users) {
-                    Log.d(TAG, user.id.toString())
+                    Log.d(TAG, user.id)
                     Log.d(TAG, user.totalScore.toString())
-                    if (user.id.equals(currentUserName)) {
+                    if (user.id == currentUserName) {
                         currentUser = user
                     }
                 }
@@ -74,7 +71,6 @@ class RankingActivity : Activity() {
         }
         usersRef.addValueEventListener(valueEventListener)
 
-
         val tv = TypedValue()
         if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
             actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
@@ -83,7 +79,6 @@ class RankingActivity : Activity() {
         viewManager = LinearLayoutManager(this)
         viewAdapter = MyAdapter(memberDTOs)
         scrollView = findViewById(R.id.ranking_scrollbar)
-
 
         recyclerView = findViewById<RecyclerView>(R.id.main_recyclerview).apply {
             // use this setting to improve performance if you know that changes
@@ -95,9 +90,7 @@ class RankingActivity : Activity() {
 
             // specify an viewAdapter (see also next example)
             adapter = viewAdapter
-
         }
-
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -142,12 +135,6 @@ class RankingActivity : Activity() {
         startActivityForResult(intent, 1)
     }
 
-    fun mOnPopupClick(view: View) { //데이터 담아서 팝업(액티비티) 호출
-        val intent = Intent(this, AddFriendPopupActivity::class.java)
-        //intent.putExtra("data", "Test Popup");
-        startActivityForResult(intent, 2)
-    }
-
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
@@ -160,7 +147,7 @@ class RankingActivity : Activity() {
                 val pushups = data.extras?.get("pushups") as Int
                 Log.d(TAG, "pushup : " + pushups.toString())
                 for (i in 0 until users.size){
-                    if(users[i].id.equals(currentUserName)) {
+                    if(users[i].id == currentUserName) {
                         users[i].totalScore = users[i].totalScore + pushups
                         usersRef.setValue(users)
                         updateData(users)
@@ -168,8 +155,8 @@ class RankingActivity : Activity() {
                 }
             }
         }
-
     }
+
     override fun onStop() {
         super.onStop()
         usersRef.removeEventListener(valueEventListener)

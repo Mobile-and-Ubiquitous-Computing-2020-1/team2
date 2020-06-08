@@ -17,16 +17,17 @@
         android:theme="@style/AppTheme.Posenet"
         android:fullBackupContent="true"
         android:allowBackup="true">
-        <activity android:name=".RankingActivity" />
-        <activity android:name=".TestActivity" />
+
         <activity android:name=".LoginActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".RankingActivity" />
         <activity android:name=".CameraActivity" />
-        <activity android:name=".AddFriendPopupActivity" android:theme="@android:style/Theme.Dialog" />
+
+        <activity android:name=".TestActivity" />
     </application>
 
 </manifest>

@@ -17,6 +17,7 @@ package org.tensorflow.lite.examples.posenet.lib
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.os.SystemClock
 import android.util.Log
 import java.io.FileInputStream
@@ -195,8 +196,15 @@ class Posenet(
    *      person: a Person object containing data about keypoint locations and confidence scores
    */
   fun estimateSinglePose(bitmap: Bitmap): Person {
+    val rotateMatrix = Matrix()
+    rotateMatrix.postRotate(90.0f)
+    val rotatedBitmap = Bitmap.createBitmap(
+      bitmap, 0, 0, bitmap.width, bitmap.height,
+      rotateMatrix, true
+    )
+
     val estimationStartTimeNanos = SystemClock.elapsedRealtimeNanos()
-    val inputArray = arrayOf(initInputArray(bitmap))
+    val inputArray = arrayOf(initInputArray(rotatedBitmap))
     Log.i(
       "posenet",
       String.format(
@@ -248,11 +256,11 @@ class Posenet(
       val positionY = keypointPositions[idx].first
       val positionX = keypointPositions[idx].second
       yCoords[idx] = (
-        position.first / (height - 1).toFloat() * bitmap.height +
+        position.first / (height - 1).toFloat() * rotatedBitmap.height +
           offsets[0][positionY][positionX][idx]
         ).toInt()
       xCoords[idx] = (
-        position.second / (width - 1).toFloat() * bitmap.width +
+        position.second / (width - 1).toFloat() * rotatedBitmap.width +
           offsets[0][positionY]
           [positionX][idx + numKeypoints]
         ).toInt()
@@ -264,8 +272,8 @@ class Posenet(
     var totalScore = 0.0f
     enumValues<BodyPart>().forEachIndexed { idx, it ->
       keypointList[idx].bodyPart = it
-      keypointList[idx].position.x = xCoords[idx]
-      keypointList[idx].position.y = yCoords[idx]
+      keypointList[idx].position.x = yCoords[idx]
+      keypointList[idx].position.y = rotatedBitmap.width - xCoords[idx]
       keypointList[idx].score = confidenceScores[idx]
       totalScore += confidenceScores[idx]
     }

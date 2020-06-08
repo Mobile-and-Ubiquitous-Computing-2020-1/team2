@@ -44,14 +44,12 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import org.tensorflow.lite.examples.posenet.lib.BodyPart
-import org.tensorflow.lite.examples.posenet.lib.KeyPoint
 import org.tensorflow.lite.examples.posenet.lib.Person
 import org.tensorflow.lite.examples.posenet.lib.Posenet
 import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
-import kotlin.properties.Delegates
 
 
 class PosenetActivity :
@@ -59,32 +57,6 @@ class PosenetActivity :
   SensorEventListener,
   ActivityCompat.OnRequestPermissionsResultCallback {
 
-
-  private lateinit var mSensorManager: SensorManager
-  private var mAccelerometer: Sensor ?= null
-  var angle = 0.0
-  var k = 0
-  lateinit var mTTS:TextToSpeech
-  public var pushups by Delegates.observable(0) { property, oldValue, newValue ->
-    mTTS.speak(newValue.toString(), TextToSpeech.QUEUE_ADD, null)
-  }
-
-  var start = 0
-  var counter = true
-  var ten = true
-  var hundred = true
-  var thousend = true
-
-
-
-
-
-
-  fun calAngle(starty: Double, startx: Double, stopy1: Double, stopy2: Double, stopx1: Double, stopx2: Double):Double{
-    val angle1: Double = Math.atan2((starty - stopy1), (startx - stopx1))
-    val angle2: Double = Math.atan2((starty - stopy2), (startx - stopx2))
-    return abs((angle2-angle1) *180/3.14)
-  }
   /** List of body joints that should be connected.    */
   private val bodyJoints = listOf(
     Pair(BodyPart.LEFT_WRIST, BodyPart.LEFT_ELBOW),
@@ -100,25 +72,6 @@ class PosenetActivity :
     Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE),
     Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE)
   )
-
-  override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
-  override fun onSensorChanged(event: SensorEvent) {
-
-    if (start == 2 && abs(event.values[0]) < 2 && abs(event.values[2]) < 4){
-    }
-    else if(start == 2 && abs(event.values[0]) > 2 && abs(event.values[2]) > 4){
-      start = 0
-
-    }
-    else if(start == 0 && abs(event.values[0]) < 2 && abs(event.values[2]) < 4){
-      start = 1
-
-    }
-    else{
-      start = 0
-    }
-  }
-
 
   /** Threshold for confidence score. */
   private val minConfidence = 0.5
@@ -249,46 +202,58 @@ class PosenetActivity :
     savedInstanceState: Bundle?
   ): View? = inflater.inflate(R.layout.tfe_pn_activity_posenet, container, false)
 
-
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     surfaceView = view.findViewById(R.id.surfaceView)
     surfaceHolder = surfaceView!!.holder
   }
 
+  private lateinit var sensorManager: SensorManager
+  private lateinit var accelerometer: Sensor
+  private var isRightCameraPosition: Boolean = false
+
+  private lateinit var mTTS: TextToSpeech
+
+  private val pushupCounter: PushupCounter = PushupCounter()
+  var pushups: Int = 0
+
   override fun onResume() {
     super.onResume()
     startBackgroundThread()
-    mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
   }
 
   override fun onStart() {
+    super.onStart()
+    openCamera()
+    posenet = Posenet(this.context!!)
+    sensorManager = context!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
     mTTS = TextToSpeech(this.context!!, TextToSpeech.OnInitListener { status ->
-      if (status != TextToSpeech.ERROR){
+      if (status != TextToSpeech.ERROR) {
         //if there is no error then set language
         mTTS.language = Locale.UK
       }
     })
-    super.onStart()
-    openCamera()
-    posenet = Posenet(this.context!!)
-    mSensorManager =
-      (context!!.getSystemService(Context.SENSOR_SERVICE) as SensorManager)
-    // focus in accelerometer
-    mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+  }
 
+  override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+  override fun onSensorChanged(event: SensorEvent) {
+    isRightCameraPosition = (9.5 < event.values[0] && event.values[0] < 10.1)
+            && (-0.5 < event.values[1] && event.values[1] < 0.5)
+            && (-0.5 < event.values[2] && event.values[2] < 0.5)
   }
 
   override fun onPause() {
     closeCamera()
     stopBackgroundThread()
     super.onPause()
-    mSensorManager.unregisterListener(this)
+    sensorManager.unregisterListener(this)
   }
 
   override fun onDestroy() {
     super.onDestroy()
     posenet.close()
-    mSensorManager.unregisterListener(this)
+    sensorManager.unregisterListener(this)
   }
 
   private fun requestCameraPermission() {
@@ -454,7 +419,6 @@ class PosenetActivity :
     }
   }
 
-
   /** A [OnImageAvailableListener] to receive frames as they are available.  */
   private var imageAvailableListener = object : OnImageAvailableListener {
     override fun onImageAvailable(imageReader: ImageReader) {
@@ -464,7 +428,6 @@ class PosenetActivity :
       }
 
       val image = imageReader.acquireLatestImage() ?: return
-      Log.d("PosenetActivity", "" + image.height + ", " + image.width)
       fillBytes(image.planes, yuvBytes)
 
       ImageUtils.convertYUV420ToARGB8888(
@@ -496,7 +459,7 @@ class PosenetActivity :
       image.close()
 
       // Process an image for analysis in every 3 frames.
-      frameCounter = (frameCounter + 1) % 1
+      frameCounter = (frameCounter + 1) % 3
       if (frameCounter == 0) {
         processImage(rotatedBitmap)
       }
@@ -550,26 +513,6 @@ class PosenetActivity :
   /** Draw bitmap on Canvas.   */
   private fun draw(canvas: Canvas, person: Person, bitmap: Bitmap) {
     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-    if (counter) {
-      mTTS.speak("please put the phone horizontally on the ground and put your body correctly in the frame", TextToSpeech.QUEUE_ADD, null)
-      counter = false
-    }
-
-    if (pushups == 10  && ten) {
-      mTTS.speak("Good job! Keep on going.", TextToSpeech.QUEUE_ADD, null)
-      ten = false
-    }
-
-    if (pushups == 100) {
-      mTTS.speak("Wow! You are really going strong this time", TextToSpeech.QUEUE_ADD, null)
-      hundred = false
-    }
-
-    if (pushups == 1000) {
-      mTTS.speak("Just three words.You.Are.Insane!", TextToSpeech.QUEUE_ADD, null)
-      thousend = false
-    }
-
     // Draw `bitmap` and `person` in square canvas.
     val screenWidth: Int
     val screenHeight: Int
@@ -604,9 +547,7 @@ class PosenetActivity :
 
     // Draw key points over the image.
     for (keyPoint in person.keyPoints) {
-
       if (keyPoint.score > minConfidence) {
-
         val position = keyPoint.position
         val adjustedX: Float = position.x.toFloat() * widthRatio + left
         val adjustedY: Float = position.y.toFloat() * heightRatio + top
@@ -614,38 +555,11 @@ class PosenetActivity :
       }
     }
 
-
-
-    var bodySideL = 0.0
-    var bodySideR = 0.0
-    var bodySide = 0.0
-    var bodyDist = 0.0
-    var pushupAngleL = 0.0
-    var pushupAngleR = 0.0
-    val AngleList = arrayListOf<KeyPoint>()
     for (line in bodyJoints) {
-
-
-
       if (
         (person.keyPoints[line.first.ordinal].score > minConfidence) and
         (person.keyPoints[line.second.ordinal].score > minConfidence)
       ) {
-
-        if (AngleList.contains(person.keyPoints[7])){
-          pushupAngleL = (calAngle(person.keyPoints[7].position.y.toDouble(), person.keyPoints[7].position.x.toDouble(), person.keyPoints[5].position.y.toDouble(), person.keyPoints[9].position.y.toDouble(), person.keyPoints[5].position.x.toDouble(), person.keyPoints[9].position.x.toDouble()))
-
-        }
-        if (AngleList.contains(person.keyPoints[8])){
-            pushupAngleR = (calAngle(person.keyPoints[8].position.y.toDouble(), person.keyPoints[8].position.x.toDouble(), person.keyPoints[6].position.y.toDouble(), person.keyPoints[10].position.y.toDouble(), person.keyPoints[6].position.x.toDouble(), person.keyPoints[10].position.x.toDouble()))
-
-        }
-        AngleList.add(person.keyPoints[line.first.ordinal])
-        AngleList.add(person.keyPoints[line.second.ordinal])
-
-
-
-
         canvas.drawLine(
           person.keyPoints[line.first.ordinal].position.x.toFloat() * widthRatio + left,
           person.keyPoints[line.first.ordinal].position.y.toFloat() * heightRatio + top,
@@ -656,63 +570,12 @@ class PosenetActivity :
       }
     }
 
-
-  
-    //choose which angle gets detected more accurately and use that to calculate
-    bodySideL = person.keyPoints[5].score.toDouble() + person.keyPoints[7].score.toDouble() +
-            person.keyPoints[9].score.toDouble() + person.keyPoints[11].score.toDouble()
-    bodySideR = person.keyPoints[6].score.toDouble() + person.keyPoints[8].score.toDouble() +
-            person.keyPoints[10].score.toDouble() + person.keyPoints[12].score.toDouble()
-
-    if (bodySideL > bodySideR) {
-      angle = pushupAngleL
-      bodySide = abs(bodySideL)
-      bodyDist = abs(person.keyPoints[5].position.x.toDouble() - person.keyPoints[13].position.x.toDouble())
-    } else {
-      angle = pushupAngleR
-      bodySide = abs(bodySideR)
-      bodyDist = abs(person.keyPoints[6].position.x.toDouble() - person.keyPoints[14].position.x.toDouble())
-    }
-
-    //Checking if phone and body is in correct position and notifying user
-    if (start == 1 && bodySide > 2.5 && bodyDist > 20) {
-      start = 2
-    }
-    else if (start == 2 && (bodySide < 2.5 || bodyDist < 20)) {
-      start = 0
-    }
-
-    //If correct position of phone and user count pushups
-
-    if (start==2) {
-      //first goal is to hit 90 degree
-      if (k == 1) {
-        if (angle < 90.0) {
-          k = 0
-        }
-      }
-      //only if 90 degree goal was hit check for 150 degree goal
-      else {
-        if (angle > 150.0) {
-          pushups += 1
-          k = 1
-        }
-      }
-    }
-
     canvas.drawText(
-      "Pushups: %s".format(pushups),
+      "Pushups: %d".format(pushups),
       (15.0f * widthRatio),
       (10.0f * heightRatio + bottom),
       paint
     )
-    canvas.drawText(
-      "Angle: %s".format(angle),
-      (15.0f * widthRatio),
-      (30.0f * heightRatio + bottom),
-      paint
-    )
-
 
     // Draw!
     surfaceHolder!!.unlockCanvasAndPost(canvas)
@@ -728,6 +591,14 @@ class PosenetActivity :
 
     // Perform inference.
     val person = posenet.estimateSinglePose(scaledBitmap)
+    val countType = pushupCounter.count(person, isRightCameraPosition)
+    when (countType) {
+      CountType.SUCCESS -> pushups += 1
+//      CountType.PROGRESS ->
+//      CountType.PROGRESS ->
+//      CountType.PROGRESS ->
+//      CountType.PROGRESS ->
+    }
     val canvas: Canvas = surfaceHolder!!.lockCanvas()
     draw(canvas, person, scaledBitmap)
   }
