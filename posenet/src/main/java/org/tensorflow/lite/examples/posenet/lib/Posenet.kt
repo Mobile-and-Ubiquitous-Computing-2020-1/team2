@@ -220,12 +220,13 @@ class Posenet(
    *      person: a Person object containing data about keypoint locations and confidence scores
    */
   fun estimateSinglePose(bitmap: Bitmap): Person {
-    val rotateMatrix = Matrix()
-    rotateMatrix.postRotate(90.0f)
-    val rotatedBitmap = Bitmap.createBitmap(
-      bitmap, 0, 0, bitmap.width, bitmap.height,
-      rotateMatrix, true
-    )
+    val rotatedBitmap = bitmap
+//    val rotateMatrix = Matrix()
+//    rotateMatrix.postRotate(90.0f)
+//    val rotatedBitmap = Bitmap.createBitmap(
+//      bitmap, 0, 0, bitmap.width, bitmap.height,
+//      rotateMatrix, true
+//    )
 
     val estimationStartTimeNanos = SystemClock.elapsedRealtimeNanos()
     val inputArray = arrayOf(initInputArray(rotatedBitmap))
@@ -287,7 +288,7 @@ class Posenet(
         position.second / (width - 1).toFloat() * rotatedBitmap.width +
           offsets[0][positionY]
           [positionX][idx + numKeypoints]
-        ).toInt()
+      ).toInt()
       confidenceScores[idx] = sigmoid(heatmaps[0][positionY][positionX][idx])
     }
 
@@ -296,8 +297,10 @@ class Posenet(
     var totalScore = 0.0f
     enumValues<BodyPart>().forEachIndexed { idx, it ->
       keypointList[idx].bodyPart = it
-      keypointList[idx].position.x = yCoords[idx]
-      keypointList[idx].position.y = rotatedBitmap.width - xCoords[idx]
+      keypointList[idx].position.x = xCoords[idx]
+      keypointList[idx].position.y = yCoords[idx]
+//      keypointList[idx].position.x = yCoords[idx]
+//      keypointList[idx].position.y = rotatedBitmap.width - xCoords[idx]
       keypointList[idx].score = confidenceScores[idx]
       totalScore += confidenceScores[idx]
     }
