@@ -10,9 +10,12 @@ enum class CountType {
 }
 
 class PushupCounter {
+    var time: Int = 0
 
     fun count(person: Person, isRightCameraPosition: Boolean): CountType {
-
-        return CountType.SUCCESS
+        time += 1
+        if (time % 100 == 0)
+            return CountType.SUCCESS
+        return CountType.PROGRESS
     }
 }

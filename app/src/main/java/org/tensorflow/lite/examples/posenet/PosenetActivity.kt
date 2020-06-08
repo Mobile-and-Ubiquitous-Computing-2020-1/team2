@@ -238,9 +238,9 @@ class PosenetActivity :
 
   override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
   override fun onSensorChanged(event: SensorEvent) {
-    isRightCameraPosition = (9.6 < event.values[0] && event.values[0] < 10)
-            && (-0.2 < event.values[0] && event.values[0] < 0.2)
-            && (-0.2 < event.values[0] && event.values[0] < 0.2)
+    isRightCameraPosition = (9.5 < event.values[0] && event.values[0] < 10.1)
+            && (-0.5 < event.values[1] && event.values[1] < 0.5)
+            && (-0.5 < event.values[2] && event.values[2] < 0.5)
   }
 
   override fun onPause() {
